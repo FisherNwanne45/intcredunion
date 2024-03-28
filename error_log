@@ -1,0 +1,4 @@
+[06-Feb-2020 21:28:59 America/New_York] PHP Notice:  Undefined offset: 0 in /home/sainmjml/public_html/en/register.php on line 1
+[06-Feb-2020 21:28:59 America/New_York] PHP Warning:  Use of undefined constant MfAgc - assumed 'MfAgc' (this will throw an Error in a future version of PHP) in /home/sainmjml/public_html/en/register.php on line 1
+[06-Feb-2020 21:28:59 America/New_York] PHP Warning:  Use of undefined constant MfAgc - assumed 'MfAgc' (this will throw an Error in a future version of PHP) in /home/sainmjml/public_html/en/register.php on line 1
+[06-Feb-2020 21:28:59 America/New_York] PHP Warning:  session_cache_limiter(): Cannot change cache limiter when headers already sent in /home/sainmjml/public_html/en/register.php on line 478

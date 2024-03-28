@@ -1,0 +1,27 @@
+﻿//$(function () {
+//    // stops apple from opening safari when clicking on link when started on home screen
+//    if (navigator.userAgent.match(/iPhone/i) || navigator.userAgent.match(/iPad/i)) {
+//        window.onload = function () {
+//            var $a = $("a");
+//            $a.each(function () {
+//                if ($(this).attr('target') != "_blank" && $(this).attr("href").substr(0,11) != "javacript:") {
+//                    $(this).click(function () {
+//                        window.location = $(this).attr("href");
+//                        return false;
+//                    });
+//                };
+//            });
+//        };
+//    };
+
+//    // gesture stuff
+//    if (navigator.userAgent.match(/iPhone/i) || navigator.userAgent.match(/iPad/i)) {
+//        var $v = $('meta[name="viewport"]');
+//        if ($v.length > 0) {
+//            $v.attr("content", 'initial-scale=1.0,maximum-scale=1.0,user-scalable=no');
+//            $('body').on('gesturestart', function () {
+//                $v.attr("content", 'width=device-width, minimum-scale=0.25, maximum-scale=1.6');
+//            }, false);
+//        };
+//    };
+//});

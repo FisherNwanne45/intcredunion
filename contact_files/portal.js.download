@@ -1,0 +1,1652 @@
+﻿APP.Behaviours.moneyFormat = function (container) {
+    var moneyFormat = this;
+
+    moneyFormat.init = function (element) {
+        moneyFormat.settings = APP.Functions.behaviourOptions(element, { "dp": 2 });
+        $(element).focusout(function () {
+            var value = this.value.toString();
+            if (!isNaN(value) && value != "") {
+                this.value = parseFloat(value).toFixed(moneyFormat.settings.dp);
+            }            
+        });
+        $(element).keydown(function (e) {
+            
+            var input = $(this).val();
+            var hasLessOrEqualThanTwoDecimal = (/^\d*\.?\d{0,1}$/).test(input);
+            
+            if (e.keyCode == 9 || e.keyCode == 8 || e.keyCode == 46 || e.keyCode == 35 || e.keyCode == 36 || e.keyCode == 37 || e.keyCode == 38 || e.keyCode == 39 || e.keyCode == 46) {
+                return true;
+            }
+            if ((e.keyCode == 190 || e.keyCode == 110) && this.value.indexOf(".") == -1 && this.value != "") {
+                return this.value.length < $(this).attr("maxlength");
+            }
+
+            if (((e.keyCode >= 48 && e.keyCode <= 57) && e.shiftKey == false) || ((e.keyCode >= 96 && e.keyCode <= 105))) {
+
+                if ($(this).attr("type") == "number" && $(this)[0].validity != null && $(this)[0].validity.badInput) {
+                    return false;
+                }
+
+                var cursorPosition = $(this).getCursorPosition(this.value);
+                var reachedMaxlenght = this.value.length >= $(this).attr("maxlength");
+                var justTypedBeforeTheDecimalPoint = cursorPosition <= this.value.indexOf(".");
+                
+                var selection = window.getSelection();
+                strSelection = String(selection);
+
+                if (reachedMaxlenght && strSelection == "") { //reached the number of digits allowed and user have not made a selection of current entry
+                    return false;
+                }
+                
+                if (hasLessOrEqualThanTwoDecimal || justTypedBeforeTheDecimalPoint || strSelection != "") { //has not reached max lenght and... user typed before decimal point or still has less than two decimals
+                    return true;
+                }
+                return false;
+            }
+            return false;
+        });
+        $(element).on('paste', function () {
+            var input = this;
+            setTimeout(function () {
+                var maxLen = $(input).attr("maxlength") - 0;
+                var text = $(input).val();
+                if (text.length > maxLen) {
+                    $(input).val(text.substr(0, maxLen));
+                }
+                // do something with text
+            }, 100);
+        });
+    };
+    moneyFormat.init(container);
+};
+
+jQuery.fn.getCursorPosition = function() {
+    if (this.lengh == 0) return -1;
+    return $(this).getSelectionStart();
+};
+
+jQuery.fn.getSelectionStart = function() {
+    if (this.lengh == 0) return -1;
+    input = this[0];
+    var pos = input.value.length;
+
+    if (typeof (input.selectionStart) != "undefined") {
+        pos = input.selectionStart;
+    }
+    return pos;
+};
+
+APP.Behaviours.numberFormat = function (container) {
+    var numberFormat = this;
+
+    numberFormat.init = function (element) {
+        numberFormat.settings = APP.Functions.behaviourOptions(element, { "dp": 2 });
+        $(element).keydown(function (e) {
+            if (e.keyCode == 9 || e.keyCode == 8 || e.keyCode == 46 || e.keyCode == 35 || e.keyCode == 36 || e.keyCode == 37 || e.keyCode == 38 || e.keyCode == 39 || e.keyCode == 46) {
+                return true;
+            }
+            if (((e.keyCode >= 48 && e.keyCode <= 57) && e.shiftKey == false) || ((e.keyCode >= 96 && e.keyCode <= 105))) {
+                if ($(this).attr("type") == "number" && $(this)[0].validity != null && $(this)[0].validity.badInput) {
+                    return false;
+                }
+                return this.value.length < $(this).attr("maxlength");
+            }
+            return false;
+        });
+        $(element).on('paste', function () {
+            var input = this;
+            setTimeout(function () {
+                var maxLen = $(input).attr("maxlength") - 0;
+                var text = $(input).val();
+                if (text.length > maxLen) {
+                    $(input).val(text.substr(0, maxLen));
+                }
+                // do something with text
+            }, 100);
+        });
+    };
+    numberFormat.init(container);
+};
+
+
+var ctrlDown = false;
+
+APP.Behaviours.creaditCardFormat = function (container) {
+    var creaditCardFormat = this;
+
+    creaditCardFormat.init = function (element) {
+        $(element).focusout(function () {
+            var value = this.value.toString();
+            this.value = value.replace(/\s+/g, '');
+        });
+        $(element).keydown(function (e) {
+            if (ctrlDown && (e.keyCode == 65 || e.keyCode == 67 || e.keyCode == 86)) {
+                ctrlDown = false;
+                return true;
+            }
+            if (e.keyCode == 17) {
+                ctrlDown = true;
+            }
+            if (e.keyCode == 9 || e.keyCode == 8 || e.keyCode == 46 || e.keyCode == 35 || e.keyCode == 36 || e.keyCode == 37 || e.keyCode == 38 || e.keyCode == 39 || e.keyCode == 46) {
+                return true;
+            }
+            if ((e.keyCode >= 48 && e.keyCode <= 57 && e.shiftKey == false) || (e.keyCode >= 96 && e.keyCode <= 105) || e.keyCode == 32) {
+                if ($(this)[0].validity != null && $(this)[0].validity.badInput) {
+                    return false;
+                }
+                return this.value.length < $(this).attr("maxlength");
+            }
+            return false;
+        });
+        $(element).keyup(function (e) {
+            if (e.keyCode == 17) {
+                ctrlDown = false;
+            }
+        });
+    };
+    creaditCardFormat.init(container);
+};
+
+APP.Behaviours.validation = function (container) {
+    var validation = this;
+
+    validation.init = function (element) {
+        validation.settings = APP.Functions.behaviourOptions(element, { "highlight": true, "noValidationBypass": true });
+
+        $(element).submit(function () {
+            if ($(this).attr("data-action") != null && $(this).attr("action") != $(this).attr("data-action")) {
+                return true;
+            }
+            $(":submit", this).attr("disabled", "");
+
+            $(".alert.alert-error").hide();
+            var valid = $(this).validate(validation.settings);
+            if (!valid) {
+                if (validation.settings.noFocus == null || !!validation.settings.noFocus == false) {
+                    var $firstError = $("[data-validation-error]:first");
+                    $("html, body").animate({ scrollTop: $firstError.offset().top - 10 }, "fast");
+                    var inputName = $firstError.attr("data-validation-error");
+                    if ($("[name='" + inputName + "'],[data-validate-name='" + inputName + "']").is("input, select, textarea")) {
+                        $("[name='" + inputName + "'],[data-validate-name='" + inputName + "']").first().focus();
+                    } else {
+                        $("[name='" + inputName + "'],[data-validate-name='" + inputName + "']").find("input:first, select:first, textarea:first").focus();
+                    }
+                }
+                $(":submit", this).removeAttr("disabled");
+                $('.validation-icon').show();
+                $('help-block').show();
+            }
+            return valid;
+            $('.validation-icon').show();
+            $('help-block').show();
+        });
+    };
+    validation.init(container);
+};
+
+APP.Behaviours.selectAccountType = function (container) {
+    var core = this;
+    core.init = function (element) {
+        $(element).change(function () {
+            $(this).parents("form").attr("data-action", "selectAccountType");
+            $(this).parents("form").prepend("<input type='hidden' name='selectAccountType' value='OK'/>");
+            $(this).parents("form").submit();
+        });
+    };
+    core.init(container);
+};
+
+APP.Behaviours.selectPayeeTarget = function (container) {
+    var selectPayeeTarget = this;
+    selectPayeeTarget.init = function (element) {
+        selectPayeeTarget.settings = APP.Functions.behaviourOptions(element, {
+            "disable": true,
+            "hide": true,
+            "populate": true,
+            "payeeVal": $("#TargetPayeeName").data("validate"),
+            "accountVal": $("#TargetAccountNumber").data("validate"),
+            "sortCodeVal": $("#TargetAccountSortcode").data("validate")
+        });
+        $(element).change(function () {
+            var $this = $(this);
+            $("#errorBanner").hide();
+            if (selectPayeeTarget.settings.hide && $this.find(":selected").val() !== "") {
+                $("#NewPayeeDetails").hide();
+                $("#NewPayeeDetails input").val("");
+                $("#AddPayee_Label").hide();
+                $("#3RdPartyMsg").hide();
+            } else {
+                $("#NewPayeeDetails").show();
+                $("#AddPayee_Label").show();
+                $("#3RdPartyMsg").show();
+            }
+
+            if (selectPayeeTarget.settings.disable && $this.find(":selected").val() !== "") {
+                $("#NewPayeeDetails input").attr("disabled", "");
+            } else {
+                $("#NewPayeeDetails input").removeAttr("disabled");
+            }
+
+            if (selectPayeeTarget.settings.populate) {
+                var $sel = $this.find(":selected");
+                if ($sel.data("sortcode") != null && $sel.data("sortcode") !== "") {
+                    var payee = $sel.data("payee").toString();
+                    var account = $sel.data("account").toString();
+                    var sortcode = $sel.data("sortcode").toString();
+                    $("#TargetPayeeName").val(payee);
+                    $("#TargetAccountNumber").val(account);
+                    $("#TargetAccountSortcode").val(sortcode);
+
+                    $("#SortCodeParts_0_").val(sortcode.substr(0, 2));
+                    $("#SortCodeParts_1_").val(sortcode.substr(2, 2));
+                    $("#SortCodeParts_2_").val(sortcode.substr(4, 2));
+                }
+
+                $("#TargetPayeeName").removeData("validate");
+                $("#TargetAccountNumber").removeData("validate");
+                $("#TargetAccountSortcode").removeData("validate");
+
+                if ($sel.val() === "") {
+                    $sel.data("payee", "");
+                    $sel.data("account", "");
+                    $sel.data("sortcode", "");
+                    $("#AddPayee").removeAttr("checked").click();
+                    $("#TargetPayeeName").attr("data-validate", selectPayeeTarget.settings.payeeVal);
+                    $("#TargetAccountNumber").attr("data-validate", selectPayeeTarget.settings.accountVal);
+                    $("#TargetAccountSortcode").attr("data-validate", selectPayeeTarget.settings.sortCodeVal);
+
+                    //clear the field values ***
+                    if ($("#firstTimeLoad").val() == "false") {
+                        $("#TargetPayeeName").val("");
+                        $("#TargetAccountNumber").val("");
+                        $("#SortCodeParts_0_").val("");
+                        $("#SortCodeParts_1_").val("");
+                        $("#SortCodeParts_2_").val("");
+                        $("#Amount").val("");
+                        var today = new Date();
+                        $("#FromDay").val(today.getDate());
+                        $("#FromMonth").val(today.getMonth() + 1);
+                        $("#FromYear").val(today.getFullYear());
+                        $("#PaymentReference").val("");
+                    } else {// when is true. coming from the Confirm page
+                        $("#comingFromConfirmPage").val("false");
+                    }
+                } else {
+                    $("#firstTimeLoad").val("false");
+                    if ($("#comingFromConfirmPage").val() == "false") {
+                        //clear the field values amount , date and reference***
+                        //$("#Amount").val("");
+                        //var today = new Date();
+                        //$("#FromDay").val(today.getDate());
+                        //$("#FromMonth").val(today.getMonth() + 1);
+                        //$("#FromYear").val(today.getFullYear());
+                        //$("#PaymentReference").val("");
+                    } else { // when is true. coming from the Confirm page
+                        $("#comingFromConfirmPage").val("false");
+                    }
+
+                    $("#TargetPayeeName").attr("data-validate", "requiredwhen");
+                    $("#TargetAccountNumber").attr("data-validate", "requiredwhen");
+                    $("#TargetAccountSortcode").attr("data-validate", "requiredwhen");
+                    $("#AddPayee").removeAttr("checked");
+                }
+            } else {
+                $("#NewPayeeDetails input[type='text']").val("");
+            }
+
+
+        });
+    };
+    selectPayeeTarget.init(container);
+    $(container).change();
+};
+
+APP.Behaviours.recalculateTotal = function (container) {
+    var recalculateTotal = this;
+    recalculateTotal.init = function (element) {
+        $(element).keyup(function () {
+            var $amounts = $(".transfer-amount");
+            var total = 0;
+            $amounts.each(function (i, f) {
+                var t = parseFloat($(f).val());
+                if (!isNaN(t) && t != null) {
+                    total = total + t;
+                }
+            });
+            var currency = $(".transfer-currency").text();
+            if (currency == '') {
+                currency = '£';
+            }
+            $(".total-amount").text(total.currencyFormat(currency));
+        });
+    };
+    recalculateTotal.init(container);
+};
+
+//***********  new message text area validation ******
+APP.Behaviours.validateTextArea = function (container) {
+    var validateTextArea = this;
+    validateTextArea.init = function (element) {
+        $(element).keyup(function () {
+            var mssgContent = $("#MessageBody").val();
+            var $span1 = $("#MessageBody").next();
+            if (mssgContent.trim() == "") {
+                $('#mssgTextAreaId').removeAttr("data-validation-valid");
+                $("#mssgTextAreaId").attr("data-validation-error", "MessageBody");
+                $span1.attr("data-validation-error", "MessageBody");
+                $span1.removeAttr("data-validation-valid");
+                $span1.text("Please enter a message");
+                $("#mssgTextAreaId").show();
+            } else {
+                $('#mssgTextAreaId').removeAttr("data-validation-error");
+                $("#mssgTextAreaId").attr("data-validation-valid", "MessageBody");
+                $span1.text("");
+                $("#mssgTextAreaId").show();
+            }
+        });
+    };
+    validateTextArea.init(container);
+};
+
+
+//***********  new message text area validation for the help and FAQ ******
+APP.Behaviours.validateTextAreaHelpAndFAQ = function (container) {
+    var validateTextAreaHelpAndFAQ = this;
+    validateTextAreaHelpAndFAQ.init = function (element) {
+        $(element).keyup(function () {
+            var mssgContent = $("#Message").val();
+            var $span1 = $("#Message").next();
+            if (mssgContent.trim() == "") {
+                $('#mssgTextAreaId').removeAttr("data-validation-valid");
+                $("#mssgTextAreaId").attr("data-validation-error", "Message");
+                $span1.attr("data-validation-error", "Message");
+                $span1.removeAttr("data-validation-valid");
+                $span1.text("Please enter a message");
+                $("#mssgTextAreaId").show();
+            } else {
+                $('#mssgTextAreaId').removeAttr("data-validation-error");
+                $("#mssgTextAreaId").attr("data-validation-valid", "Message");
+                $span1.text("");
+                $("#mssgTextAreaId").show();
+            }
+        });
+    };
+    validateTextAreaHelpAndFAQ.init(container);
+};
+
+
+
+APP.Behaviours.numberLength = function (container) {
+    var numberLength = this;
+    numberLength.init = function (element) {
+        $(element).keydown(function (e) {
+            if (e.keyCode == 9 || e.keyCode == 8 || e.keyCode == 46 || e.keyCode == 35 || e.keyCode == 36 || e.keyCode == 37 || e.keyCode == 38 || e.keyCode == 39 || e.keyCode == 46) {
+                return true;
+            }
+            if ((e.keyCode == 190 || e.keyCode == 110) && this.value.indexOf(".") == -1 && this.value != "") {
+                return this.value.length < $(this).attr("maxlength");
+            }
+            if (((e.keyCode >= 48 && e.keyCode <= 57) && e.shiftKey == false) || ((e.keyCode >= 96 && e.keyCode <= 105))) {
+                if ($(this).attr("type") == "number" && $(this)[0].validity != null && $(this)[0].validity.badInput) {
+                    return false;
+                }
+                return this.value.length < $(this).attr("maxlength");
+            }
+            return false;
+        });
+        $(element).on('paste', function () {
+            var input = this;
+            setTimeout(function () {
+                var maxLen = $(input).attr("maxlength") - 0;
+                var text = $(input).val();
+                if (text.length > maxLen) {
+                    $(input).val(text.substr(0, maxLen));
+                }
+                // do something with text
+            }, 100);
+        });
+    };
+    numberLength.init(container);
+};
+
+APP.Behaviours.selectTransfersRequired = function (container) {
+    var selectTransfersRequired = this;
+    selectTransfersRequired.init = function (element) {
+        $(element).change(function () {
+            var $transfers = $(".transfer_balance");
+            var required = $(this).val();
+
+            if (required == "Please select" || required == "0") {
+                required = 0;
+                $("#enterDetails").hide();
+            } else {
+                $("#enterDetails").show();
+            }
+
+            $transfers.each(function () {
+                var $transfer = $(this);
+                var index = $transfer.prop("id").split('_')[1];
+                if (index > required) {
+                    $transfer.hide();
+                    $transfer.find("input").each(function () {
+                        $(this).val("").data('changed', false);
+                        $(this).removeClass("validation-error-highlight");
+                        $(this).closest('.form-row').find('span.help-block, span.validation-icon').attr('style', 'display: none;');
+                    });
+                } else {
+                    $transfer.show();
+                }
+            });
+            $(".transfer-amount").keyup();
+        });
+        //$(element).change();
+    };
+    selectTransfersRequired.init(container);
+};
+
+APP.Behaviours.selectAccountAlerts = function (container) {
+    var selectAccountAlerts = this;
+    selectAccountAlerts.init = function (element) {
+        $(element).change(function () {
+            $(this).parents("form").submit();
+        });
+    };
+    selectAccountAlerts.init(container);
+};
+
+APP.Behaviours.ajaxAccountTargets = function (container) {
+    var ajaxAccountTargets = this;
+    ajaxAccountTargets.init = function (element) {
+        $(element).change(function (e) {
+            e.preventDefault();
+            var url = $(e.currentTarget).attr('data-href');
+            url = url + '?SourceToken=' + $("#Source option:selected").val();
+            if ($("#Target option:selected").length > 0) {
+                url = url + '&Target=' + $("#Target option:selected").val();
+                $('.help-block[data-validation-error="Target"]').hide();
+            }
+
+            $.ajax({
+                url: url,
+                timeout: 100000,
+                beforeSend: function () {
+                    $('#Target').attr("disabled", "");
+                },
+                error: function () {
+                    $(".alert.alert-error").show();
+                }
+            }).done(function (html) {
+                $('#Target').removeAttr("disabled");
+
+                $("#Source2").val($("#Source option:selected").val());
+                var content = $("#TargetArea").html(html);
+                if ($("[name='CurrencySymbol']").val() == "") {
+                    $("#CurrencySymbol").text("");
+                } else {
+                    $("#CurrencySymbol").text('(' + $("[name='CurrencySymbol']").val() + ')');
+                }
+
+                $("#CurrencyCode").text($("[name='CurrencyCode']").val());
+
+                APP.LoadBehaviour(content);
+
+                $('#Target').change();
+            });
+            return false;
+        });
+    };
+    ajaxAccountTargets.init(container);
+    if ($(container).prop('selectedIndex') < 0) {
+        $(container).prop('selectedIndex', 0);
+    }
+    if ($(container).prop('selectedIndex') > 0) {
+        var i = $(container).prop('selectedIndex');
+        if ($(container).find("option").eq(i).attr("selected") == null) {
+            $(container).prop('selectedIndex', 0);
+        }
+        ;
+    }
+
+};
+
+APP.Behaviours.ajaxAccountAmounts = function (container) {
+    var ajaxAccountAmounts = this;
+    ajaxAccountAmounts.init = function (element) {
+        $(element).change(function (e) {
+            e.preventDefault();
+            var url = $(e.currentTarget).attr('data-href');
+            url = url + '?source=' + $("#Source option:selected").val();
+            url = url + '&Target=' + $("#Target option:selected").val();
+            $.ajax({
+                url: url,
+                timeout: 10000,
+                beforeSend: function () {
+                },
+                error: function () {
+                    $(".alert.alert-error").show();
+                }
+            }).done(function (html) {
+
+                var content = $("#AmountArea").html(html);
+                $("#CurrencySymbol").text($("[name='CurrencySymbol']").val());
+                $("#CurrencyCode").text($("[name='CurrencyCode']").val());
+                APP.LoadBehaviour(content);
+            });
+            return false;
+        });
+    };
+    ajaxAccountAmounts.init(container);
+};
+
+APP.Behaviours.sendData = function (container) {
+    var sendData = this;
+    sendData.init = function (element) {
+        $(element).fastClick(function (e) {
+            e.preventDefault();
+            var url = $(this).attr("href");
+            var $form = $(this).parents("form");
+            $form.attr("action", url);
+            $form.submit();
+            return false;
+        });
+    };
+    sendData.init(container);
+};
+
+
+APP.Behaviours.reviewQuickTransfer = function (container) {
+    var ajaxQuickTransfer = this;
+    ajaxQuickTransfer.init = function (element) {
+        $(element).fastClick(function (e) {
+            e.preventDefault();
+            var $form = $(this).parents("form");
+            if (!$form.validate()) {
+                return false;
+            }
+            var source = $form.find("[name='Source'] option:selected").text();
+            var target = $form.find("[name='Target'] option:selected").text();
+            var amount = $form.find("[name='Amount']").val();
+            $(".transfer-from-account").text(source);
+            $(".transfer-to-account").text(target);
+            $(".transfer-amount").text(parseFloat(amount).currencyFormat($("[name='CurrencyCode']").val()));
+            $("#ajax-transfer-widget-setup").hide();
+            $("#ajax-transfer-widget-review").show();
+            $("#ajax-transfer-widget-complete").hide();
+        });
+    };
+    ajaxQuickTransfer.init(container);
+};
+
+APP.Behaviours.startQuickTransfer = function (container) {
+    var startQuickTransfer = this;
+    startQuickTransfer.init = function (element) {
+        $(element).fastClick(function (e) {
+            e.preventDefault();
+            var $form = $(this).parents("form");
+            $form.find("[name='Amount']").val("");
+            $("#ajax-transfer-widget-setup").show();
+            $("#ajax-transfer-widget-review").hide();
+            $("#ajax-transfer-widget-complete").hide();
+        });
+    };
+    startQuickTransfer.init(container);
+};
+
+APP.Behaviours.ajaxQuickTransfer = function (container) {
+    var ajaxQuickTransfer = this;
+    ajaxQuickTransfer.init = function (element) {
+        $(element).fastClick(function (e) {
+            e.preventDefault();
+            $("#quick_transfer_error").hide();
+            var $form = $(this).parents("form");
+            if (!$form.validate()) {
+                return false;
+            }
+            $(":submit", this).attr("disabled", "");
+            var url = $form.attr("action");
+            $.ajax({
+                url: url,
+                type: "POST",
+                data: {
+                    __RequestVerificationToken: $form.find("[name='__RequestVerificationToken']").val(),
+                    Source: $form.find("[name='Source']").val(),
+                    Target: $form.find("[name='Target']").val(),
+                    Amount: $form.find("[name='Amount']").val()
+                },
+                dataType: "json",
+                timeout: 10000,
+                complete: function () {
+                    $(":submit", this).removeAttr("disabled");
+                    $form.find("[name='Amount']").val("");
+                    $("#ajax-transfer-widget-setup").hide();
+                    $("#ajax-transfer-widget-review").hide();
+                    $("#ajax-transfer-widget-complete").show();
+                },
+                error: function () {
+                    $("#quick_transfer_error p").text(IE.resources.clientresource.an_error_has_occurred_making_your_quick_transfer);
+                    $("#quick_transfer_error").addClass("alert-error").removeClass("alert-success").show();
+                },
+                success: function (data) {
+                    if (data.status == "Completed") {
+                        $("#quick_transfer_error p").text(IE.resources.clientresource.your_quick_transfer_has_been_made_successfully);
+
+                        $("#quick_transfer_error").addClass("alert-success").removeClass("alert-error").show();
+                        $form.find("[name='Amount']").val("");
+                    }
+                    if (data.status == "Error") {
+                        $("#quick_transfer_error p").text(IE.resources.clientresource.an_error_has_occurred_making_your_quick_transfer);
+                        $("#quick_transfer_error").addClass("alert-error").removeClass("alert-success").show();
+                    }
+                    if (data.status == "InsufficientFunds") {
+                        $("#quick_transfer_error p").text(IE.resources.clientresource.there_are_insufficient_funds_to_make_your_quick_transfer);
+                        $("#quick_transfer_error").addClass("alert-error").removeClass("alert-success").show();
+                    }
+                    if (data.status == "LimitExceeded") {
+                        $("#quick_transfer_error p").text(IE.resources.clientresource.you_have_exceeded_your_daily_transfer_limit);
+                        $("#quick_transfer_error").addClass("alert-error").removeClass("alert-success").show();
+                    }
+                }
+            });
+            return false;
+        });
+    };
+    ajaxQuickTransfer.init(container);
+};
+
+APP.Behaviours.selectSourceAccount = function (container) {
+    var selectSourceAccount = this;
+    selectSourceAccount.init = function (element) {
+        $(element).change(function () {
+            $(this).parents("form").submit();
+        });
+    };
+    selectSourceAccount.init(container);
+};
+
+APP.Behaviours.changeAlert = function (container) {
+    var changeAlert = this;
+    changeAlert.init = function (element) {
+        $(element).change(function () {
+            var $inputs = $(this).parents('label').find('input[type="text"], input[type="number"], select');
+            if ($(this).prop("checked")) {
+                $inputs.removeAttr("disabled");
+            } else {
+                $inputs.attr("disabled", "");
+            }
+        });
+        $(element).change();
+    };
+    changeAlert.init(container);
+};
+
+APP.Behaviours.selectPrimaryNumber = function (container) {
+    var selectPrimaryNumber = this;
+    selectPrimaryNumber.init = function (element) {
+        $(element).change(function () {
+            var $inputs = $(this).parents('li').find('input[type="text"], input[type="number"], select');
+            if ($(this).prop("checked")) {
+                $inputs.removeAttr("disabled");
+            } else {
+                $inputs.attr("disabled", "");
+            }
+        });
+        $(element).change();
+    };
+    selectPrimaryNumber.init(container);
+};
+
+APP.Behaviours.show = function (container) {
+    var show = this;
+    show.init = function (element) {
+        $(element).fastClick(function (e) {
+            e.preventDefault();
+            $(this).show();
+            return false;
+        });
+    };
+    show.init(container);
+};
+
+APP.Behaviours.ajaxHideAlert = function (container) {
+    var ajaxHideAlert = this;
+    ajaxHideAlert.init = function (element) {
+        $(element).fastClick(function (e) {
+            e.preventDefault();
+            var url = $(this).attr("href");
+            $.ajax(url);
+            $(this).parents(".alert").hide();
+            return false;
+        });
+    };
+    ajaxHideAlert.init(container);
+};
+
+APP.Behaviours.hideAlert = function (container) {
+    var hideAlert = this;
+    hideAlert.init = function (element) {
+        $(element).fastClick(function (e) {
+            e.preventDefault();
+            $(this).parents(".alert").hide();
+            return false;
+        });
+    };
+    hideAlert.init(container);
+};
+
+APP.Behaviours.showOnLoad = function (container) {
+    var showOnLoad = this;
+    showOnLoad.init = function (element) {
+        $(element).show();
+    };
+    showOnLoad.init(container);
+};
+
+APP.Behaviours.hideOnLoad = function (container) {
+    var hideOnLoad = this;
+    hideOnLoad.init = function (element) {
+        $(element).hide();
+    };
+    hideOnLoad.init(container);
+};
+
+APP.Behaviours.monitorTimeout = function (container) {
+    var monitorTimeout = this;
+    //10 minutes of timeout
+    var defaults = { timeOut: "720000", redirectTimeOut: "120000", timeoutUrl: "/", extendUrl: "/", signoutUrl: "/" };
+
+    monitorTimeout.init = function (element) {
+        monitorTimeout.settings = APP.Functions.behaviourOptions(element, defaults);
+        timerSettings = monitorTimeout.settings;
+        warningTimer = setTimeout(function () { APP.Functions.timeout(monitorTimeout.settings); }, parseInt(monitorTimeout.settings.timeOut) - parseInt(monitorTimeout.settings.redirectTimeOut)); //start timer
+    };
+    monitorTimeout.init(container);
+};
+
+APP.Functions.timeout = function (settings) {
+    var seconds = parseInt(settings.redirectTimeOut / 1000);
+    var $warning = $("div.page-warning");
+    if ($warning.length > 0) {
+        $warning.find(".sign-out").attr("href", settings.signoutUrl);
+       
+        $.magnificPopup.open({
+            items: {
+                src: '<div class="page-warning alert alert-warning timeout-window">' +
+                ' For security reasons, this page will <br/>timeout in<br/>' +
+                '<span class="page-timeout-seconds">' + seconds + '</span><br/>' +
+                '<div class="align-center">seconds</div>' +
+                '<button type="button" class="mfp-close btn btn-small page-timeout-continue auto-width-element">I need more time &rsaquo;</button><br/>' +
+                ' </div>' 
+            },
+            type: 'inline',
+            callbacks: {
+                afterClose: function (e) {
+                    if (btnClick === 'continue') {
+                        $.ajax(settings.extendUrl);
+                        APP.Functions.resetTimeout(settings);
+                    } else if (btnClick == 'save') {
+                        eval(behaviourFx);
+                    }
+                }
+            },
+            closeOnBgClick: false
+        }, 0);
+
+    }
+
+    $('.page-timeout-seconds').text(seconds); //display number of seconds left
+    if (timerCountdown === undefined) {
+        clearInterval(timerCountdown);
+    }
+    timerCountdown = setInterval(function () { //update countdown every second
+        seconds--;
+        if (seconds > 0) {
+            $('.page-timeout-seconds').text(seconds);
+        } else if (seconds == 0) {
+            $('.page-timeout-seconds').text("0");
+            window.location.href = settings.timeoutUrl;
+        }
+    }, 1000);
+   
+    $('.page-timeout-continue').on('click', function (e) { //reset timer on user clicking yes button
+        btnClick = 'continue';
+    });
+};
+
+APP.Functions.resetTimeout = function (settings) {
+    clearInterval(timerCountdown);
+    clearTimeout(warningTimer);
+    $('.page-warning').slideUp();
+    warningTimer = setTimeout(function () { APP.Functions.timeout(settings); }, parseInt(settings.timeOut) - parseInt(settings.redirectTimeOut)); //restart timer
+};
+
+var warningTimer;
+//the timer for the page timeout warning
+var timerCountdown;
+// the countdown for the page timeout warning
+var timerSettings;
+// the timeout settings
+
+APP.Behaviours.disableBackX = function () {
+    var disableBack = this;
+    disableBack.init = function () {
+        window.onload = function () {
+            if (typeof history.pushState === "function") {
+                history.pushState("noback", null, null);
+                window.onpopstate = function () {
+                    history.pushState('stopback', null, null);
+                    // Handle the back (or forward) buttons here
+                    // Will NOT handle refresh, use onbeforeunload for this.
+                };
+            } else {
+                var ignoreHashChange = true;
+                window.onhashchange = function () {
+                    if (!ignoreHashChange) {
+                        ignoreHashChange = true;
+                        window.location.hash = Math.random();
+                        // Detect and redirect change here
+                        // Works in older FF and IE9
+                        // * it does mess with your hash symbol (anchor?) pound sign
+                        // delimiter on the end of the URL
+                    } else {
+                        ignoreHashChange = false;
+                    }
+                };
+            }
+        };
+
+        window.onbeforeunload = function () {
+        };
+    };
+    disableBack.init();
+};
+
+APP.Behaviours.paymentType = function (container) {
+    var paymentType = this;
+    var defaults = { selectedClass: "payment-selected", paymentElement: "#payment_container", paymentRequiredType: "specific" };
+    paymentType.init = function (element) {
+        paymentType.settings = APP.Functions.behaviourOptions(container, defaults);
+        if (element.is("input")) {
+            $(element).fastClick(function () {
+                $("input[type=\"radio\"][data-behaviour=\"paymentType\"]").next("label").find("span").removeClass(paymentType.settings.selectedClass);
+                $(this).next("label").find("span").addClass(paymentType.settings.selectedClass);
+                if ($(this).val() == paymentType.settings.paymentRequiredType) {
+                    $(paymentType.settings.paymentElement + " *").removeAttr('disabled');
+                } else {
+                    $(paymentType.settings.paymentElement + " *").attr('disabled', 'disabled');
+                }
+            });
+        }
+    };
+    paymentType.init(container);
+};
+
+APP.Behaviours.paymentSelection = function (container) {
+    var paymentSelection = this;
+
+    paymentSelection.init = function () {
+        var $c = $(container);
+        var $r = $('[type="radio"]', $c);
+        var $h = $('.custom-radio-btn', $c);
+
+        $h.show();
+        $r.hide();
+        $r.parent().find('button.custom-radio-btn').removeClass("hidden");
+        $r.each(function () {
+            if ($(this).prop('checked') == true) {
+                paymentSelection.switchRadio($(this).parent());
+            } else {
+                $(this).parent().find('input[type="text"], input[type="number"], select').prop('disabled', true).val("");
+            }
+        });
+
+        $r.on('change', function (e) {
+            var $e = $(e.currentTarget);
+            var $b = $e.siblings('.custom-radio-btn');
+
+            paymentSelection.switchRadio($b);
+        });
+
+        $('.custom-radio-btn', $c).fastClick(function (e) {
+            e.preventDefault();
+            var $e = $(e.currentTarget);
+            var $rb = $e.siblings('[type="radio"]');
+            if ($rb.attr("disabled") == null) {
+                $rb.prop('checked', true);
+                paymentSelection.switchRadio($e);
+            }
+
+            $('.custom-radio-btn').change();
+        });
+
+        $('.custom-radio-btn').change(function () {
+
+            var $d = $("#PaymentType_ErrorMsg").hide();
+        });
+    };
+
+    paymentSelection.switchRadio = function (element) {
+        var $this = element,
+            $c = $(container),
+            $t = $this.parent().find('[type="text"], input[type="number"], select'),
+            $i = $('.custom-radio-btn', $c).not($this).find('i');
+
+        if ($('.pType') != undefined) {
+            $('.pType').hide();
+            $("#amount_specific").attr('class', 'input-pounds other-amount paycc-amount'); 
+            $('#PaymentAmount_ErrorMsg').hide();
+            $('#otherAmount').hide();
+            $('.pType').attr('data-validation-valid', 'Type');
+            $('.pType').removeAttr("data-validation-error");
+            $('.pType').prop('style', 'display: inline;');
+            $('#typeErrorMessage').attr('style', 'display: none;');
+        }
+        if (element.find('custom-radio-button').context.id == 'payment_specific') {
+            $('.pTypeMin').hide();
+            $('.pTypeMax').hide();
+            $('#amount_specific').focus();
+        } 
+
+        if (element.find('custom-radio-button').context.id == 'payment_full') {
+            $('.pTypeMin').hide();
+            $('.pTypeMax').show();
+        }
+
+        if (element.find('custom-radio-button').context.id == 'payment_minimum') {
+            $('.pTypeMax').hide();
+            $('.pTypeMin').show();
+        }
+
+        if ($('.ddType') != undefined) {
+            $('.ddType').hide();
+            $("#amount_pounds").attr('class', 'input-pounds other-amount'); 
+            $('#otherAmountErrorMessage').attr('style', 'display: none;'); 
+            $('#otherAmount').attr('style', 'display: none;'); 
+            $('.ddType').attr('data-validation-valid', 'Type');
+            $('.ddType').removeAttr("data-validation-error");
+            $('.ddType').prop('style', 'display: inline;');
+            $('#typeErrorMessage').attr('style', 'display: none;');
+            
+        }
+
+        $i.removeClass('icon-ok-circle');
+        $i.addClass('icon-circle-blank');
+        $('i', $this).removeClass('icon-circle-blank').addClass('icon-ok-circle');
+        $c.find('input[type="text"], input[type="number"], select').not($t).prop('disabled', true).val("");
+        if ($t.length > 0) {
+            $t.prop('disabled', false);
+        }
+        if ($t.context.id == "payment_specific") {
+            $(".paycc-amount").attr('disabled', false);
+            $(".cc-continue").removeClass("btn-success");
+        }
+
+        if (element.find('custom-radio-button').context.id.replace(' ', '_') == 'how_much_1') {
+            $('#ddTypeSB').hide();
+            $('#ddTypeSB').addClass('hide-dd-radio');
+            $('#ddTypeMin').show();
+            $('#ddTypeMin').removeClass('hide-dd-radio');
+            $("#otherAmount").addClass('hide-dd-radio');
+        }
+
+        if (element.find('custom-radio-button').context.id.replace(' ', '_') == 'how_much_2') {
+            $('#ddTypeMin').hide();
+            $('#ddTypeMin').addClass('hide-dd-radio');
+            $('#ddTypeSB').show();
+            $('#ddTypeSB').removeClass('hide-dd-radio');
+            $("#otherAmount").addClass('hide-dd-radio');
+        }
+
+        if (element.find('custom-radio-button').context.id.replace(' ', '_') == 'how_much_3') {
+            $("#amount_pounds").attr('disabled', false);
+            $('.ddType').hide();
+            $('#ddTypeMin').addClass('hide-dd-radio');
+            $('#ddTypeSB').addClass('hide-dd-radio');
+            $("#otherAmount").removeClass('hide-dd-radio');
+        }
+    };
+
+    paymentSelection.init();
+
+};
+
+APP.Behaviours.tabs = function (container) {
+    var tabs = this,
+        defaults = {
+            tabs: $('.nav-tabs li', container),
+            tabsContent: $('.tab-content', container),
+            fade: false
+        };
+
+    tabs.init = function () {
+        $('a', defaults.tabs).fastClick(function (e) {
+            e.preventDefault();
+            var $this = $(e.currentTarget),
+                id = this.getAttribute('href');
+
+            if ($this.parent('li').hasClass('active')) {
+                defaults.tabs.not('.active').show();
+            } else {
+                window.location = id;
+            }
+            return false;
+        });
+    };
+
+    tabs.init();
+};
+
+APP.Behaviours.showTransaction = function (container) {
+    var showTransaction = this;
+
+    showTransaction.init = function (element) {
+        $(element).fastClick(function (e) {
+            e.preventDefault();
+            APP.Functions.resetTimeout(timerSettings);
+            $('.loader-container').remove();
+            var $this = $(this),
+                expanded = $(this).next().is(":visible"),
+                $head = $(this).parents("table:first").find("thead"),
+                $row = $(e.currentTarget),
+                // ajax loader container
+                $lC = $('<div />', {
+                    'class': 'loader-container',
+                    css: {
+                        position: 'absolute',
+                        zIndex: '9999999',
+                        left: parseInt($row.offset().left) + 'px',
+                        top: parseInt($row.offset().top) + 'px',
+                        width: parseInt($row.outerWidth()),
+                        height: parseInt($row.outerHeight()),
+                        backgroundColor: 'rgba(0, 0, 0, .1)'
+                    }
+                }),
+                // animated ajax loader (using font icon)
+                $loader = $('<i />', {
+                    'class': 'icon-spinner icon-spin icon-2x',
+                    css: {
+                        position: 'relative',
+                        zIndex: '999999',
+                        color: '#9f518d',
+                        left: parseInt($row.outerWidth() / 2) - 11 + 'px',
+                        top: parseInt($row.outerHeight() / 2) - 11 + 'px'
+                    }
+                });
+
+            $lC.html($loader);
+
+            if (expanded) {
+                $this.next().hide();
+                return false;
+            } else {
+                $.ajax({
+                    url: $head.attr('data-action'),
+                    data: {
+                        key: $head.attr("data-account"),
+                        productType: $head.attr("data-product-type"),
+                        transactionIdentifier: $row.attr("data-transaction-id")
+                    },
+                    timeout: 10000,
+                    beforeSend: function () {
+                        $('body').prepend($lC);
+                    },
+                    complete: function () {
+                        $lC.remove();
+                    },
+                    error: function () {
+                        $(".alert.alert-error").show();
+                    },
+                    success: function (html) {
+                        $(".alert.alert-error").hide();
+                        var $details = $row.next(".transaction-details"),
+                            $html = $(html);
+
+                        $.each($details.data(), function (key, value) {
+                            if (value == "") {
+                                $html.find("." + key).html("&nbsp;");
+                            } else {
+                                $html.find("." + key).text(value);
+                            }
+                        });
+
+                        $details.html($html).show();
+                    }
+                });
+            }
+
+            return false;
+        });
+    };
+
+    showTransaction.init(container);
+};
+
+APP.Behaviours.selectAccount = function (container) {
+    var selectAccount = this;
+
+    selectAccount.init = function (element) {
+        var $c = $('.btn-link-more', $(element));
+        $c.fastClick(function (e) {
+            e.preventDefault();
+            APP.Functions.resetTimeout(timerSettings);
+            var url = $(e.currentTarget).attr('href'),
+                $b = $(element),
+                // ajax loader container
+                $lC = $('<div />', {
+                    css: {
+                        position: 'absolute',
+                        zIndex: '999999',
+                        left: parseInt($b.offset().left),
+                        top: parseInt($b.offset().top),
+                        width: parseInt($b.outerWidth()),
+                        height: parseInt($b.outerHeight()),
+                        backgroundColor: 'rgba(0, 0, 0, .1)'
+                    }
+                }),
+                // animated ajax loader (using font icon)
+                $loader = $('<i />', {
+                    'class': 'icon-spinner icon-3x icon-spin',
+                    css: {
+                        position: 'relative',
+                        left: parseInt($lC.outerWidth() / 2) - 16 + 'px',
+                        top: parseInt($lC.outerHeight() / 2) - 16 + 'px',
+                        color: '#9f518d'
+                    }
+                });
+
+            $.ajax({
+                url: url,
+                timeout: 10000,
+                beforeSend: function () {
+                    // show ajax loader first when ajax call is triggered
+                    $lC.html($loader);
+                    $('body').append($lC);
+                },
+                complete: function () {
+                    // remove ajax loader
+                    $lC.remove();
+                },
+                error: function () {
+                    $(".alert.alert-error").show();
+                }
+            }).done(function (html) {
+                APP.Functions.collapseAccounts();
+                var $account = $(container).parent();
+                var content = $account.html(html);
+                APP.LoadBehaviour(content);
+                $('html, body').animate({
+                    scrollTop: $account.offset().top
+                }, 200);
+            });
+
+            return false;
+        });
+    };
+
+    selectAccount.init(container);
+};
+
+APP.Behaviours.dateSelectPicker = function (container) {
+    var dateSelectPicker = this;
+    dateSelectPicker.init = function (element) {
+        dateSelectPicker.settings = APP.Functions.behaviourOptions(container, { day: "#day", month: "#month", year: "#year" });
+        $(element).datepicker(
+            {
+                dateFormat: "yy-mm-dd",
+                showOn: 'both',
+                buttonText: '<i class="icon-calendar icon-large"></i><span class="visuallyhidden">Date Picker</span>',
+                numberOfMonths: 2,
+                firstDay: 1,
+                onClose: function (dateText) {
+                    $(dateSelectPicker.settings.year).val(dateText.split('-')[0] - 0 == 0 ? "" : dateText.split('-')[0] - 0);
+                    $(dateSelectPicker.settings.month).val(dateText.split('-')[1] - 0 == 0 ? "" : dateText.split('-')[1] - 0);
+                    $(dateSelectPicker.settings.day).val(dateText.split('-')[2] - 0 == 0 ? "" : dateText.split('-')[2] - 0);
+                }
+            });
+    };
+    dateSelectPicker.init(container);
+};
+
+APP.Behaviours.dateFromPicker = function (container) {
+    var dateFromPicker = this;
+    dateFromPicker.init = function (element, day, month, year) {
+        $(element).datepicker(
+            {
+                dateFormat: "yy-mm-dd",
+                showOn: 'both',
+                buttonText: '<i class="icon-calendar icon-large"></i><span class="visuallyhidden">Date Picker</span>',
+                numberOfMonths: 1,
+                firstDay: 1,
+                showCurrentAtPos: 0,
+                prevText: "",
+                nextText: "",
+                dayNamesMin: ['S', ' M', ' T', ' W', ' T', ' F', ' S'],
+
+                onClose: function (dateText) {
+
+                    $(year).val(dateText.split('-')[0] - 0 == 0 ? "" : dateText.split('-')[0] - 0);
+                    $(month).val(dateText.split('-')[1] - 0 == 0 ? "" : dateText.split('-')[1] - 0);
+                    $(day).val(dateText.split('-')[2] - 0 == 0 ? "" : dateText.split('-')[2] - 0)  //updating the value of the textbox
+                                                                                         .change(); //trigger change event.
+                }
+            });
+    };
+    dateFromPicker.init(container, '#FromDay', '#FromMonth', '#FromYear');
+
+    $("#FromDay").change(function () {
+        apply.validation.validateField($('#FromDay'), { "highlight": true, "quiet": false });
+    });
+
+};
+
+APP.Behaviours.dateToPicker = function (container) {
+    var dateToPicker = this;
+    dateToPicker.init = function (element, day, month, year) {
+
+        $(element).datepicker(
+            {
+                dateFormat: "yy-mm-dd",
+                showOn: 'both',
+                buttonText: '<i class="icon-calendar icon-large"></i><span class="visuallyhidden">Date Picker</span>',
+                numberOfMonths: 1,
+                firstDay: 1,
+                showCurrentAtPos: 0,
+                prevText: "",
+                nextText: "",
+                dayNamesMin: ['S', 'M', 'T', 'W', 'T', 'F', 'S'],
+                onClose: function (dateText) {
+                    $(year).val(dateText.split('-')[0] - 0 == 0 ? "" : dateText.split('-')[0] - 0);
+                    $(month).val(dateText.split('-')[1] - 0 == 0 ? "" : dateText.split('-')[1] - 0);
+                    $(day).val(dateText.split('-')[2] - 0 == 0 ? "" : dateText.split('-')[2] - 0).change();
+                }
+            });
+    };
+    dateToPicker.init(container, '#ToDay', '#ToMonth', '#ToYear');
+};
+
+APP.Behaviours.widget = function (container) {
+    var defaults = {
+        widgetClass: '.widget',
+        widgetOpenClass: 'widget-open',
+        collapse: false,
+        animate: false,
+        animateTime: 200
+    };
+    var widget = this;
+    widget.init = function () {
+        widget.settings = APP.Functions.behaviourOptions(container, defaults);
+        $('.toggle', container).fastClick(function (e) {
+            e.preventDefault();
+            // collapse other widget while opening current one if collapse = "true"
+            if (widget.settings.collapse === true) {
+                $('.widget').filter('.widget-open').not(container).removeClass('widget-open');
+            }
+            // animate widget if animate = "true"
+            if (widget.settings.animate === true) {
+                container.find('.body').slideToggle(widget.settings.animateTime, function () {
+                    container.toggleClass(defaults.widgetOpenClass);
+                });
+            } else {
+                container.toggleClass(defaults.widgetOpenClass);
+            }
+            ;
+            $(e.currentTarget).trigger('blur');
+            return false;
+        });
+    };
+
+    // trigger some actions on screen resize
+    $(window).resize(function () {
+        $(defaults.widgetClass).filter('.widget-open:not([data-collapse="false"])').find('.body').slideUp(200);
+        $(defaults.widgetClass).filter('.widget-open:not([data-collapse="false"])').removeClass('widget-open');
+    });
+
+    widget.init();
+};
+
+APP.Behaviours.threeDSecure = function (container) {
+
+    function canAccessIFrame(iframe) {
+        var html = null;
+        try {
+            // deal with older browsers
+            var doc = iframe.contentDocument || iframe.contentWindow.document;
+            html = doc.body.innerHTML;
+        } catch (err) {
+
+            // do nothing
+        }
+
+        return (html !== null);
+    }
+
+    var threeDSecure = this;
+    threeDSecure.init = function (element) {
+
+        var $element = $(element);
+        threeDSecure.settings = APP.Functions.behaviourOptions(container, { form: "form" });
+        var $form = $("form#" + threeDSecure.settings.form);
+        $element.load(function () {
+
+            //if we can't access the iframe, don't do anything
+            if (!canAccessIFrame($(element).get(0))) {
+                //show the iframe and let the user deal with it
+                $.each($form.serializeArray(), function (index, val) {
+                    if (val.name == "CardNumber" && val.value == "") {
+                        location.replace(location.href);
+                        return false;
+                    }
+                    return true;
+                });
+                $form.hide();
+                $element.show();
+                // ReSharper disable InconsistentFunctionReturns
+                return;
+                // ReSharper restore InconsistentFunctionReturns
+            }
+
+            $element.hide();
+
+            //form should be autosubmitted
+            var submit = $element.get(0).contentDocument.getElementById("autosubmit");
+            if (submit !== null) {
+                return $(submit).submit();
+            }
+
+            var result = $element.get(0).contentDocument.getElementById("threeDSResult");
+            if (result !== null) {
+                var $result = $(result);
+                var reload = false;
+                //copy the values over from the original form
+                $.each($form.serializeArray(), function (index, val) {
+                    if (val.name == "CardNumber" && val.value == "") {
+                        reload = true;
+                        return false;
+                    }
+                    var $input = $("<input>").attr("type", "hidden")
+                        .attr("name", val.name)
+                        .val(val.value);
+                    $result.append($input);
+                    return true;
+                });
+                if (reload) {
+                    history.go(-1);
+                    location.replace(location.href);
+                    return false;
+                } else {
+                    return $result.submit();
+                }
+            }
+        });
+    };
+    threeDSecure.init(container);
+};
+
+APP.Behaviours.cancelPayment = function (container) {
+    var that = this;
+    that.init = function (element) {
+        that.settings = APP.Functions.behaviourOptions(container, { edit: "#edit", review: "#review" });
+        $(element).fastClick(function (e) {
+            e.preventDefault();
+            $(that.settings.edit).show();
+            $(that.settings.review).hide();
+            return false;
+        });
+    };
+
+    that.init(container);
+};
+
+APP.Behaviours.reviewPayment = function (container) {
+    var reviewPayment = this;
+
+    reviewPayment.init = function (element) {
+        reviewPayment.settings = APP.Functions.behaviourOptions(container, { edit: "#edit", review: "#review" });
+        $(element).fastClick(function (e) {
+            e.preventDefault();
+            if (!element.closest('form').validate({ highlight: true })) {
+                return false;
+            }
+            $(reviewPayment.settings.edit).hide();
+            var value = $("input[name='PaymentType']:checked").val();
+            $("[data-amount]").hide();
+            $("[data-amount='" + value + "']").show();
+            $(reviewPayment.settings.review).show();
+
+            if (value == "specific") {
+                $.get(
+                    applyConfig.baseUrl + 'servicing/paycreditcard/getspecificamountvalue',
+                    {
+                        currency: $("input[name='CurrencyCode']").val(),
+                        amount: $("input[name='Amount']").val()
+                    },
+                    function (data) {
+                        $("[data-amount='specific']").text(data);
+                    },
+                    "json"
+                ).fail(function (xhr, status, error) {
+                });
+            }
+            window.scrollTo(0, 0);
+            return true;
+        });
+
+    };
+    reviewPayment.init(container);
+};
+
+APP.Functions.collapseAccounts = function () {
+    $(".alert.alert-error").hide();
+    $(".account-header").not(".account-type-container").addClass("account-content").removeClass("account-header");
+    $(".account-content-more").show();
+    $(".account-content-primary").removeClass("account-content-primary");
+    $(".btn-link-more").show();
+    $(".account-transactions").hide();
+    $(".account-transactions-table").remove();
+};
+
+APP.Behaviours.FAQ = function (container) {
+
+    // ReSharper disable InconsistentNaming
+    var FAQ = this;
+    // ReSharper restore InconsistentNaming
+
+    var defaults = {
+        'collapse': true
+    };
+
+    FAQ.init = function (element) {
+        var $c = $(container),
+            options = APP.Functions.behaviourOptions(element, defaults);
+
+        $('dl a', $c).fastClick(function (e) {
+            e.preventDefault();
+            var $this = $(e.currentTarget),
+                id = $this.attr('href'),
+                $icon = $this.parents('dt').find('i[class*="icon-"]');
+
+            if (options.collapse) {
+                $('dd.faq-container', $c).not($(id)).hide();
+            }
+            $(id).toggle();
+            $('i[class*="icon-"]', $c).not($icon).removeClass('icon-caret-down').addClass('icon-caret-right');
+            $icon.toggleClass('icon-caret-right icon-caret-down');
+            return false;
+        });
+    };
+
+    FAQ.init(container);
+};
+
+APP.Behaviours.charCounter = function (container) {
+    var charCounter = this,
+        $c = $(container),
+        defaults = {
+            limit: 750,
+            displayText: 'Chars remaining: ',
+            counterId: '#counter'
+        };
+
+    var options = APP.Functions.behaviourOptions(container, defaults);
+
+    charCounter.init = function () {
+        $(options.counterId).html(options.displayText + options.limit);
+
+        $c.bind('cut paste', null, function (e) {
+            if (!e.keyCode) {
+                setTimeout(function () {
+                    limitTextarea.validateLimit($c, options);
+                }, 250);
+            }
+        });
+
+        $c.mousedown(function (e) {
+            if (!e.keyCode) {
+                if (e.which === 1) {
+                    setTimeout(function () {
+                        limitTextarea.validateLimit($c, options);
+                    }, 250);
+                }
+            }
+        });
+
+        $c.bind('input propertychange', function (e) {
+            limitTextarea.validateLimit($c, options);
+        });
+    };
+
+    var limitTextarea = new function () {
+
+        this.validateLimit = function (txtArea, options) {
+            var txtValue = txtArea.val();
+            var realLength = txtValue.replace(/(\r\n|\r|\n)/g, "\r\n").length;
+            var lineBreakMatches = txtValue.match(/(\r\n|\r|\n)/g);
+            var lineBreakCount = lineBreakMatches ? lineBreakMatches.length : 0;
+
+            var remaining = options.limit - realLength;
+
+            if ($(options.counterId).length) {
+                if (Number(remaining) <= Number(0)) {
+                    var correction = 0;
+                    if (Number(remaining) == -2) {
+                        correction++;
+                    }
+
+                    txtArea.val(txtValue.substring(0, options.limit - lineBreakCount + correction));
+
+                    txtValue = txtArea.val();
+                    realLength = txtValue.replace(/(\r\n|\r|\n)/g, "\r\n").length;
+                    remaining = options.limit - realLength;
+
+                    $(options.counterId).html(options.displayText + remaining);
+                    return false;
+                }
+                else {
+                    $(options.counterId).html(options.displayText + remaining);
+                    return true;
+                }
+            }
+            return true;
+        };
+    };
+
+    charCounter.init();
+};
+
+APP.Behaviours.accountDetailsChange = function (container) {
+    var accountDetailsChange = this,
+        $c = $(container);
+
+    accountDetailsChange.init = function () {
+        $c.on('change', '#account', function (e) {
+            var $this = $(e.currentTarget);
+            var $form = $this.parents("form");
+            $form.submit();
+        });
+    };
+
+    accountDetailsChange.init();
+};
+
+APP.Behaviours.payeeOptions = function (container) {
+    var payeeOptions = this,
+        $c = $(container);
+
+    payeeOptions.init = function () {
+        $c.on('change', 'input[data-delete-id]', function (e) {
+            e.stopPropagation();
+            var $this = $(this),
+                $row = $this.parents('tr[data-transaction-id]');
+
+            if ($this.is(':checked')) {
+                $row.addClass('highlight');
+            } else {
+                $row.removeClass('highlight');
+            }
+            ;
+        });
+
+        $($('tr[data-transaction-id]', $c), ':not([data-coltype="payee-delete"])').fastClick(function (e) {
+            e.preventDefault();
+            var $this = $(e.currentTarget),
+                $row = $(e.delegateTarget),
+                id = $row.data('transaction-id'),
+                $d = $row.next();
+
+            if ($d.is(':visible')) {
+                $d.hide();
+            } else {
+                $d.show();
+            }
+        });
+
+        $('a', $('[data-coltype="payee-delete"]')).fastClick(function (e) {
+            e.preventDefault();
+            var href = $(this).attr('href');
+            window.location = href;
+        });
+
+        $('a', $('[data-coltype="actions"]')).fastClick(function (e) {
+            e.preventDefault();
+            var href = $(this).attr('href');
+            window.location = href;
+        });
+    };
+
+    payeeOptions.zebraTable = function (table) {
+        var $body = $(table).find('tbody');
+    };
+
+    payeeOptions.highlightRow = function (row) {
+        $(row).addClass('highlight');
+    };
+
+    payeeOptions.init();
+};
+
+APP.Behaviours.autoTab = function (container) {
+    var autoTab = this;
+    autoTab.init = function (element) {
+        $(element).keyup(function (e) {
+            switch (e.keyCode) {
+                // ignore tab
+                case 9:
+                    return false;
+                    // ignore shift
+                case 16:
+                    return false;
+                    // ignore caps lock
+                case 20:
+                    return false;
+                    // any other key up actions will trigger
+                default:
+                    var maxlength = $(this).attr('maxlength'); // get maxlength value
+                    var inputlength = $(this).val().length; // get the length of the text
+                    if (maxlength != null && inputlength >= maxlength) {
+                        // if the text is equal of more than the max length
+                        $($(this).nextAll('input')[0]).focus(); // set focus to the next text field
+                    }
+            }
+        });
+    };
+    autoTab.init(container);
+};

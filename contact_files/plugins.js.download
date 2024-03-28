@@ -1,0 +1,567 @@
+﻿// console.log crossbrowser wrapper
+function clog(msg) {
+    if (console && console.log && typeof msg !== 'undefined') {
+        console.log(msg);
+    };
+};
+
+// alert wrapper
+function al(msg) {
+    alert(msg);
+}
+
+/*
+ * Equalize heights
+ * Usage:
+ *
+ * $('input').click(function(){
+ *     $('div').equalizeHeights();
+ * });
+ *
+ */
+$.fn.equalizeHeights = function() {
+    var maxHeight = this.map(function(i,e) {
+        return $(e).height();
+    }).get();
+
+    return this.height( Math.max.apply(this, maxHeight) );
+};
+
+(function($) {
+    $.tableStripe = function(element, options) {
+        var defaults = {};
+
+        var plugin = this;
+
+        plugin.settings = {};
+
+        var $element = $(element),
+            element = element;
+
+        plugin.init = function() {
+            plugin.settings = $.extend({}, defaults, options);
+            // code goes here
+            $element.find('tbody tr:not(.transaction-details):even').addClass('odd');
+        };
+
+        plugin.init();
+    };
+
+    $.fn.tableStripe = function(options) {
+
+        return this.each(function(){
+            if (undefined == $(this).data('tableStripe')) {
+                var plugin = new $.tableStripe(this, options);
+                $(this).data('tableStripe', plugin);
+            };
+        });
+
+    };
+})(jQuery);
+
+/*Collapsible - Allows the value or change event for a link, button or input to toggle the display of a block. Also can be used on its own to hide an element and using public methods to toggle the display of that element*/
+/*Author: Adrian Westlake*/
+(function ($) {
+    $.collapsible = function (element, options) {
+        var defaults = {
+        };
+
+        var plugin = this;
+
+        plugin.settings = {};
+
+
+        var $element = $(element),
+            element = element;
+
+
+        var type = 'container';
+
+        if ($element.prop('tagName') == 'A' || $element.prop('tagName') == 'BUTTON') {
+            type = 'link';
+        }
+        else if ($element.prop('tagName') == 'INPUT' && ($element.attr('type') == "radio" || $element.attr('type') == "checkbox")) {
+            type = 'toggle';
+        }
+        else if (($element.prop('tagName') == 'SELECT' || $element.prop('tagName') == 'INPUT') && $element.data('toggle')!== undefined ){
+            type = 'input';
+        }
+
+        $element.data('data-typeof',type)
+
+
+        if (type == 'link' || type == 'toggle' || type == 'input') {
+            var $content;
+
+            if ($element.prop('tagName') == 'A') {
+                var $content = $($(element).attr('href'))
+            } else {
+                var $content = $($(element).data('toggle'))
+            }
+
+
+        }else {
+            var $content = $element;
+        }
+
+
+        if (type == 'link') {
+            var $icon = $element.find('.icon');
+        }
+
+
+
+
+        plugin.init = function () {
+            plugin.settings = $.extend({}, defaults, options);
+            var _this = this;
+            if (type == 'link') {
+                $element.on('click', function (e) {
+                    e.preventDefault();
+                    _this.toggle();
+                });
+            }
+
+            else if (type == 'toggle') {
+                $element.on('change', function () {
+                    if ($(this).prop('checked')) {
+                        _this.show();
+                    } else {
+                        _this.hide();
+                    }
+                });
+            }
+
+            else if(type == 'select') {
+                $element.on('change', function(){
+                    if($(this).val()!=''){
+                        _this.show();
+                    }else {
+                        _this.hide();
+                    }
+                });
+            }
+
+
+        };
+
+        plugin.show = function (animate) {
+            if (animate == undefined) {
+                animate = true;
+            }
+            $element.addClass('active');
+            $icon = $element.find('.icon');
+            if($icon !== undefined && $icon.length){
+                $icon.prop('class', $icon.prop('class').replace('icon-angle-down', 'icon-angle-up'));
+            }
+            $content.addClass('opened');
+            if (animate) {
+                $content.slideDown();
+            } else {
+                $content.show();
+            }
+            return true;
+        }
+        plugin.hide = function (animate) {
+            if (animate == undefined) {
+                animate = true;
+            }
+            $element.removeClass('active');
+            if ($icon !== undefined && $icon.length) {
+                $icon.prop('class', $icon.prop('class').replace('icon-angle-up', 'icon-angle-down'));
+            }
+            $content.removeClass('opened');
+            if (animate) {
+                $content.slideUp();
+            } else {
+                $content.hide();
+            }
+            return true;
+        }
+        plugin.toggle = function () {
+            _this = this;
+            if ($content.hasClass('opened')) {
+                plugin.hide()
+            } else {
+                plugin.show()
+
+            }
+        }
+
+
+        plugin.init();
+    };
+
+    $.fn.collapsible = function (options) {
+
+        return this.each(function () {
+            if (undefined == $(this).data('collapsible')) {
+                var plugin = new $.collapsible(this, options);
+                $(this).data('collapsible', plugin);
+            };
+        });
+
+    };
+})(jQuery);
+
+
+(function ($) {
+    $.customRadios = function (element, options) {
+        var defaults = {};
+
+        var plugin = this;
+
+        plugin.settings = {};
+
+        var $element = $(element),
+            element = element;
+
+        plugin.init = function () {
+            plugin.settings = $.extend({}, defaults, options);
+
+            var $radios = $element.find('.custom-radio');
+            $radios.each(function(){
+                var classes = '';
+                if($(this).hasClass('custom-radio-img')){
+                    classes = 'custom-radio-link-img';
+                }else {
+                    classes = 'custom-radio-link-btn btn btn-large';
+                }
+
+                $(this).wrap('<a class="custom-radio-link '+classes+'" href="#"></a>')
+
+            })
+            var $radioLinks = $element.find('.custom-radio-link');
+            $radioLinks.on('click', function (e) {
+                e.preventDefault();
+                $(this).addClass('active');
+                var $radio = $(this).find('input[type=radio]');
+                $radio.addClass('checked')
+                $radio.prop('checked', true)
+                $radio.trigger('change');
+                var $siblings = $(this).siblings('.custom-radio-link')
+                $siblings.removeClass('active');
+                $siblings.find('input[type=radio]').prop('checked', false).removeClass('checked').trigger('change');
+            });
+
+
+            var $checkedRadios = $element.find('input[type=radio]:checked');
+            if ($checkedRadios.length) {
+                $checkedRadios.closest('.custom-radio-link').addClass('active');
+                $checkedRadios.trigger('change');
+            }
+
+        };
+
+        plugin.init();
+    };
+
+    $.fn.customRadios = function (options) {
+
+        return this.each(function () {
+            if (undefined == $(this).data('customRadios')) {
+                var plugin = new $.customRadios(this, options);
+                $(this).data('customRadios', plugin);
+            };
+        });
+
+    };
+})(jQuery);
+
+(function ($) {
+
+    /**
+     * Customised checkboxes using Font Awesome web fonts
+     * @author Adrian Westlake
+     */
+    $.customCheckbox = function (element, options) {
+        var defaults = {};
+
+        var plugin = this;
+
+        plugin.settings = {};
+
+        var $element = $(element),
+            element = element;
+
+        /**
+         * Initialise the checkboxes
+         */
+        plugin.init = function () {
+            plugin.settings = $.extend({}, defaults, options);
+
+            $element.addClass('hide'); //hide the checkbox
+            var $checkbox = $('<button class="custom-checkbox-btn"><i class="icon-check-empty icon-large"></i></button>'); //create fake checkbox
+            $checkbox.insertBefore($element) //insert fake checkbox before the real checkbox in the DOM
+            var $icon = $checkbox.find('i');  //get reference to icon
+
+            $checkbox.on('click', function (e) { //on check event
+                e.preventDefault(); //prevent default ActionName
+                $(this).toggleClass('active'); //toggle active class
+                $icon.toggleClass('icon-check icon-check-empty') //toggle checked / empty class on icon
+                $element.prop('checked', ($element.prop('checked')) ? false : true); //toggle checked property
+                $element.trigger('change'); //trigger change event
+            }).on('blur', function () {
+                $element.trigger('change'); //trigger change event
+            });
+            $element.on('change', function () { //On change event
+
+                if ($(this).prop('checked')) { //if checked then add active class and change icon to unchecked state
+                    $checkbox.addClass('active');
+                    $icon.addClass('icon-check');
+                    $icon.removeClass('icon-check-empty');
+                } else {
+                    $checkbox.removeClass('active'); //else remove active class and change icon to checked state
+                    $icon.addClass('icon-check-empty');
+                    $icon.removeClass('icon-check');
+                }
+            })
+
+            if ($element.prop('checked') == true) { //If checkbox is prefilled on load then add active class and change icon to checked state, then trigger change event
+                $(this).addClass('active');
+                $icon.prop('class', $icon.prop('class').replace("icon-check-empty", "icon-check"));
+                $element.trigger('change');
+
+            }
+        };
+
+        plugin.init(); //initialise plugin
+    };
+
+
+    //Extend JQuery with plugin and add to elemnt data for future public calls.
+    $.fn.customCheckbox = function (options) {
+
+        return this.each(function () {
+            if (undefined == $(this).data('customCheckbox')) {
+                var plugin = new $.customCheckbox(this, options);
+                $(this).data('customCheckbox', plugin);
+            };
+        });
+
+    };
+})(jQuery);
+
+/**
+ * jQuery.fastClick.js
+ *
+ * Work around the 300ms delay for the click event in some mobile browsers.
+ *
+ * Code based on <http://code.google.com/mobile/articles/fast_buttons.html>
+ *
+ * @usage
+ * $('button').fastClick(function() {alert('clicked!');});
+ *
+ * @license MIT
+ * @author Dave Hulbert (dave1010)
+ * @version 1.0.0 2013-01-17
+ */
+
+/*global document, window, jQuery, Math */
+
+(function($) {
+
+    $.fn.fastClick = function(handler) {
+        return $(this).each(function() {
+            $.FastButton($(this)[0], handler);
+        });
+    };
+
+    $.FastButton = function(element, handler) {
+        var startX, startY;
+
+        var reset = function() {
+            $(element).unbind('touchend');
+            $("body").unbind('touchmove.fastClick');
+        };
+
+        var onClick = function(event) {
+            event.stopPropagation();
+            reset();
+            handler.call(this, event);
+
+            if (event.type === 'touchend') {
+                $.clickbuster.preventGhostClick(startX, startY);
+            }
+        };
+
+        var onTouchMove = function(event) {
+            if (Math.abs(event.originalEvent.touches[0].clientX - startX) > 10 ||
+                    Math.abs(event.originalEvent.touches[0].clientY - startY) > 10) {
+                reset();
+            }
+        };
+
+        var onTouchStart = function(event) {
+            event.stopPropagation();
+
+            $(element).bind('touchend', onClick);
+            $("body").bind('touchmove.fastClick', onTouchMove);
+
+            startX = event.originalEvent.touches[0].clientX;
+            startY = event.originalEvent.touches[0].clientY;
+        };
+
+        $(element).bind({
+            touchstart: onTouchStart,
+            click: onClick
+        });
+    };
+
+    $.clickbuster = {
+        coordinates: [],
+        preventGhostClick: function(x, y) {
+            $.clickbuster.coordinates.push(x, y);
+            window.setTimeout($.clickbuster.pop, 2500);
+        },
+        pop: function() {
+            $.clickbuster.coordinates.splice(0, 2);
+        },
+        onClick: function(event) {
+            var x, y, i;
+            for (i = 0; i < $.clickbuster.coordinates.length; i += 2) {
+                x = $.clickbuster.coordinates[i];
+                y = $.clickbuster.coordinates[i + 1];
+                if (Math.abs(event.clientX - x) < 25 && Math.abs(event.clientY - y) < 25) {
+                    event.stopPropagation();
+                    event.preventDefault();
+                }
+            }
+        }
+    };
+
+    $(function() {
+        if (document.addEventListener) {
+            document.addEventListener('click', $.clickbuster.onClick, true);
+        } else if (document.attachEvent) {
+            // for IE 7/8
+            document.attachEvent('onclick', $.clickbuster.onClick);
+        }
+    });
+
+}(jQuery));
+
+
+
+(function ($) {
+    //$('.validation-icon').hide();
+    $('.info-message span').remove();
+    $(".ui-datepicker-trigger").datepicker("show");
+
+    var targets = $('[data-rel~=tooltip]'),
+        target = false,
+        tooltip = false,
+        title = false;
+
+    targets.bind('mouseenter', function () {
+        target = $(this);
+        $("div").click(function () {
+            if (target.attr('title') != undefined) {
+                remove_tooltip();
+            }
+        });
+        tip = target.attr('title');
+        tooltip = $('<div id="tooltip"></div>');
+
+        if (!tip || tip == '')
+            return false;
+
+        target.removeAttr('title');
+        tooltip.css('opacity', 0)
+                .html(tip)
+                .appendTo('body');
+
+        var init_tooltip = function () {
+            if ($(window).width() < tooltip.outerWidth() * 1.5)
+                tooltip.css('max-width', $(window).width() / 2);
+            else
+                tooltip.css('max-width', 340);
+
+            var pos_left = target.offset().left + (target.outerWidth() / 2) - (tooltip.outerWidth() / 2),
+                pos_top = target.offset().top - tooltip.outerHeight() - 20;
+
+            if (pos_left < 0) {
+                pos_left = target.offset().left + target.outerWidth() / 2 - 20;
+                tooltip.addClass('left');
+            }
+            else
+                tooltip.removeClass('left');
+
+            if (pos_left + tooltip.outerWidth() > $(window).width()) {
+                pos_left = target.offset().left - tooltip.outerWidth() + target.outerWidth() / 2 + 20;
+                tooltip.addClass('right');
+            }
+            else
+                tooltip.removeClass('right');
+
+            if (pos_top < 0) {
+                var pos_top = target.offset().top + target.outerHeight();
+                tooltip.addClass('top');
+            }
+            else
+                tooltip.removeClass('top');
+
+            tooltip.css({ left: pos_left, top: pos_top })
+                    .animate({ top: '+=10', opacity: 1 }, 50);
+        };
+
+        init_tooltip();
+        $(window).resize(init_tooltip);
+
+        var remove_tooltip = function () {
+            tooltip.animate({ top: '-=10', opacity: 0 }, 50, function () {
+                $(this).remove();
+            });
+
+            target.attr('title', tip);
+        };
+
+        target.bind('mouseleave', remove_tooltip);
+        tooltip.bind('click', remove_tooltip);
+
+        $(window).on("orientationchange", function () {
+            remove_tooltip();
+        });
+    });
+
+})(jQuery);
+
+
+
+(function ($) {
+    //if ($('form').length) {
+    $('.short-apply [data-validate*=required]').prev('label').addClass('required');
+    //$('.card-servicing-section [data-validate*=required]').prev('label').addClass('required');
+    //}
+    $('.summary-text-link').on('click', function (e) {
+        e.preventDefault();
+        $('.summary-link-icon').text() != "▼" ? $('.summary-link-icon').text("▼") : $('.summary-link-icon').text("▲");
+        $('.summary-text').slideToggle('slow');
+    });
+    //$('.desktop-close-btn').on('click', function (e) {
+    //    e.preventDefault();
+    //    $('.summary-text').slideToggle('slow');
+    //});
+    $('.mobile-close-btn').on('click', function (e) {
+        e.preventDefault();
+        $('.summary-text').slideToggle('slow');
+    });
+
+    $('.nav-tabs li a').on('click', function (e) {
+        //var $url = $('.nav-tabs li a').attr('href');
+        //e.preventDefault();
+        //window.open($url, "_self");
+
+         $.ajax({
+             $url: $('.nav-tabs li a').attr('href'),
+            type: "GET",
+            success:function(){
+                window.open($url, "_self");
+            },
+            error:function (){
+                //alert("testing error");
+            }
+        });
+        return false;
+    });
+})(jQuery); 

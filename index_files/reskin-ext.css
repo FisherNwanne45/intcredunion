@@ -1,0 +1,31 @@
+#header #frm-search,
+#header .search.mobileOnly { display: none}
+
+.mainHeader .online-banking .title { border: 0}
+
+.mainHeader .online-banking .title a { background-color: #f06c00; border: 1px solid #f06c00; border-radius: 5px; color: #fff}
+
+.mainHeader .online-banking .title a:hover { background-color: #e55000; border: 1px solid #e55000; color: #fff}
+
+.mainHeader .online-banking .title a:active { background-color: #4c4c4c; border: 1px solid #4c4c4c; color: #fff}
+
+.mainHeader .online-banking .title.is-active a { background-color: #e55000; border: 1px solid #e55000; color: #fff}
+
+.mainHeader .online-banking .title a:active:after,
+.mainHeader .online-banking .title a:after,
+.mainHeader .online-banking .title a:focus:after,
+.mainHeader .online-banking .title a:hover:after { border-top: 9px solid #fff}
+
+.mainHeader .online-banking .title.is-active a:after { border-top: transparent; border-bottom: 9px solid #fff}
+
+.mainHeader #logo.logo { z-index: 10}
+
+.hide { display: none}
+
+@media (max-width:767px){
+ .tabbed-content ul li span.align span br { display: inline-block; content: " "; width: .25em}
+
+ .tabbed-content .controller a,
+ .tabbed-content.strip-tabs .controller .outer,
+ .tabbed-content.strip-tabs .controller strong { max-width: 100%} 
+ }

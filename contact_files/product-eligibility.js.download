@@ -1,0 +1,253 @@
+"use strict";
+
+var ExistingCustomerCheckResponse = function () {
+
+
+    function existingCustomerCheckResponse(existingCustomer, suspectedCustomer, partyId) {
+        //_classCallCheck(this, existingCustomerCheckResponse);
+
+        // invokes the setter
+        this.ExistingCustomer = existingCustomer === undefined ? false : existingCustomer;
+        this.SuspectedCustomer = suspectedCustomer === undefined ? false : suspectedCustomer;
+        this.PartyId = partyId === undefined ? 0 : partyId;
+    }
+
+    return existingCustomerCheckResponse;
+}();
+
+var DobModel = function () {
+    function dobModel(context) {
+
+        // invokes the setter
+        this.Day = $("select#DateOfBirthDay option:selected", context).text();
+        this.Month = $("select#DateOfBirthMonth option:selected", context).text();
+        this.Year = $("select#DateOfBirthYear option:selected", context).text();
+    }
+
+    return dobModel;
+}();
+
+var CustomerProductEligibility = function () {
+    function customerProductEligibility(context) {
+
+        // invokes the setter
+        this.Firstname = $('input#Applicants_0__FirstName', context).val();
+        this.Lastname = $('input#Applicants_0__LastName', context).val();
+        this.Dob = new DobModel(context);
+        this.PostCode = $('input#CurrentAddress_AddressPostcode', context).val();
+        this.AccountType = $('select#JAAccountType', context).val();
+        this.AccountNumber = $('input#JAAccountNumber', context).val();
+        this.SortCode = $('#JASortCodeParts_0_', context).val() + $('#JASortCodeParts_1_', context).val() + $('#JASortCodeParts_2_', context).val();
+        this.CardNumber = $('input#JACardNumber', context).val();
+        this.LoanAgreementNumber = $('input#JALoanAgreementNumber', context).val();
+    }
+
+
+
+    return customerProductEligibility;
+}();
+
+function isEmpty(obj) {
+    for (var key in obj) {
+        if (obj.hasOwnProperty(key)) return false;
+    }
+    return true;
+}
+
+var AddAntiForgeryToken = function (headers) {
+    headers.__RequestVerificationToken = $('input[name="__RequestVerificationToken"]').val();
+    return headers;
+};
+
+// JavaScript source code
+var ProductEligibility = {
+
+    ProductType: $("input[name='ProductTypeCode']").val(),
+
+    ProductFilter: ["DefinedAccessSaver"], // "FixedRateCashIsa1Year", "FixedRateCashIsa2Year", "FixedRateCashIsa3Year", "FixedRateCashIsa4Year", "FixedRateCashIsa5Year"],
+
+    ProductId: $('#ProductCode').val(),
+
+    WhenTextSelected: $("input[name=validateEligibilityBasedOnJADataPresence]").val(),
+
+    SelectedText: "",
+
+    QualifyingMatchCriteria: $("input[name=EligibilityStatus]").val(),
+
+    RootUrl: "",
+
+    Context: "",
+
+    ErrorMessages: Object(),
+
+    Init: function (productType, jaExistingCustomerWithDetailsOptionSelected, htmlSection, errorMessages, rootUrl) {
+
+        ProductEligibility.ProductType = productType;
+        ProductEligibility.SelectedText = jaExistingCustomerWithDetailsOptionSelected;
+        ProductEligibility.Context = htmlSection;
+        ProductEligibility.RootUrl = rootUrl;
+
+        if (typeof errorMessages !== 'undefined' && !isEmpty(errorMessages) && errorMessages["default"] !== 'undefined') {
+            ProductEligibility.ErrorMessages["default"] = 'An error has occurred. Please wait and try again later.';
+        }
+
+        if (errorMessages !== null && typeof errorMessages === 'object') {
+            ProductEligibility.ErrorMessages = errorMessages;
+        }
+    },
+
+    IsProductEligibilityRequired: function () {
+
+        var returnValue = false;
+
+        var position = ProductEligibility.ProductFilter.indexOf(ProductEligibility.ProductType);
+
+        if (position >= 0) {
+            returnValue = true;
+        };
+
+        return returnValue;
+    },
+
+    ValidateProductEligibilityPreRequisites: function (context) {
+
+        var isFirstnameValid = apply.validation.validateField($('input#Applicants_0__FirstName', context), { "highlight": true, "quiet": false });
+        var isLastnameValid = apply.validation.validateField($('input#Applicants_0__LastName', context), { "highlight": true, "quiet": false });
+        var isDobValid = apply.validation.validateField($('span#DateOfBirth', context), { "highlight": true, "quiet": false });
+        var isPostcodeValid = apply.validation.validateField($('input#CurrentAddress_AddressPostcode', context), { "highlight": true, "quiet": false });
+
+
+        if (isFirstnameValid && isLastnameValid && isDobValid && isPostcodeValid) {
+            return true;
+        }
+
+        return false;
+    },
+
+    CheckForExistingCustomer: function (context) {
+
+        var model = new CustomerProductEligibility(context);
+
+        var dobModel = { Day: model.Dob.Day, Month: model.Dob.Month, Year: model.Dob.Year };
+
+        var data = { Firstname: model.Firstname, Lastname: model.Lastname, Dob: dobModel, Postcode: model.PostCode, AccountType: model.AccountType, AccountNumber: model.AccountNumber, SortCode: model.SortCode, CardNumber: model.CardNumber, LoanAgreementNumber: model.LoanAgreementNumber };
+
+        var postCustomerCheck = JSON.stringify(data);
+
+        var response = "";
+
+        $.ajax({
+            url: ProductEligibility.RootUrl + 'servicing/service/getcustomerid',
+            headers: AddAntiForgeryToken({}),
+            async: false,
+            data: postCustomerCheck,
+            contentType: 'application/json; charset=utf-8',
+            success: function success(data) {
+
+                response = data;
+            },
+            type: "POST"
+        });
+
+        return ProductEligibility.ConvertExistingCustomerResponse(response);
+    },
+
+    ConvertExistingCustomerResponse: function (existingCustomerResponse) {
+
+        var response = new ExistingCustomerCheckResponse();
+
+        if (existingCustomerResponse != "" && existingCustomerResponse !== 'undefined') {
+
+            $.each(existingCustomerResponse.ExtendedProperties, function (index) {
+
+                if (existingCustomerResponse.ExtendedProperties[index].Name == "ExistingCustomer") {
+                    if (existingCustomerResponse.ExtendedProperties[index].Value == 'True') {
+                        response.ExistingCustomer = true;
+                    }
+                }
+
+                if (existingCustomerResponse.ExtendedProperties[index].Name == "SuspectedCustomer") {
+                    if (existingCustomerResponse.ExtendedProperties[index].Value == 'True') {
+                        response.SuspectedCustomer = true;
+                    }
+                }
+
+                if (existingCustomerResponse.ExtendedProperties[index].Name == "PartyId") {
+                    response.PartyId = existingCustomerResponse.ExtendedProperties[index].Value;
+                }
+            });
+        }
+
+        return response;
+    },
+
+    CheckProductEligibilityForCustomer: function (partyId) {
+
+        var eligibleModel = { PartyId: partyId, ProductId: ProductEligibility.ProductId };
+
+        var postEligibleCheck = JSON.stringify(eligibleModel);
+
+        var response = "";
+
+        $.ajax({
+            url: ProductEligibility.RootUrl + 'servicing/service/validateeligibility',
+            headers: AddAntiForgeryToken({}),
+            async: false,
+            data: postEligibleCheck,
+            contentType: 'application/json; charset=utf-8',
+            success: function success(data) {
+
+                response = data;
+            },
+            type: "POST"
+        });
+
+        var isCustomerEligible = false;
+
+        if (response != "" && response !== 'undefined') {
+
+            $.each(response, function (index) {
+
+                if (response[index].Name == "Result") {
+
+                    if (response[index].Value == ProductEligibility.QualifyingMatchCriteria) {
+                        isCustomerEligible = true;
+                    }
+                }
+            });
+        }
+
+        return isCustomerEligible;
+    },
+
+    IsExistingCustomerWithDetailsSelected: function () {
+
+        return ProductEligibility.WhenTextSelected == ProductEligibility.SelectedText;
+    },
+
+    HasCustomErrorMessage: function () {
+
+        var hasProductErrorMessage = errorMessages[ProductEligibility.ProductType] !== 'undefined';
+        return typeof errorMessages !== 'undefined' && !isEmpty(errorMessages) && hasProductErrorMessage;
+    },
+
+    GetProductErrorMessage: function () {
+
+        return ProductEligibility.ErrorMessages[ProductEligibility.ProductType];
+    },
+
+    GetDefaultErrorMessage: function () {
+
+        return ProductEligibility.ErrorMessages["default"];
+    },
+
+    ShowErrorMessage: function () {
+
+        log.Console('Please define how to set the error message on page load.');
+    },
+
+    HideErrorMessage: function () {
+
+        log.Console('Please define how to set the error message on page load.');
+    }
+};

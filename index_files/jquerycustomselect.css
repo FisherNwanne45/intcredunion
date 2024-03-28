@@ -1,0 +1,52 @@
+
+span { font-family: "Sainsburys Mary Ann Medium", Helvetica, sans-serif; } 
+.custom-select { border-radius: 2px; position: relative; width: 100%; border-radius: 2px; border: solid 1px #d7d7d7; height: 48px; background: #fff; -webkit-user-select: none; -khtml-user-select: none; -moz-user-select: none; -o-user-select: none; user-select: none; background-image: url("https://www.sainsburysbank.co.uk/~/media/images/rebrand/dropdown.png"); background-size: 16px; background-repeat: no-repeat; background-position: 95%; font-family: "Arial", Helvetica, sans-serif; font-size:0.9em; margin-top: 5px; transition-duration: .2s; transition-property: box-shadow,border-color; } 
+.custom-select:hover { border-color: #4c4c4c; box-shadow: inset 0 0 0 1px #4c4c4c; } 
+.custom-select:focus { border: solid 1px #f06c00; box-shadow: 0 0 0 3px #96dbfa; } 
+.custom-select a { color: #333; display: flex; align-items: center; width: 100%; height: 38px; padding: 5px 10px; text-decoration: none; cursor: pointer; outline-width: 0; font-size: 1.1em; } 
+.custom-select a span { display: inline-block; width: 220px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; } 
+.custom-select select { display: none !important; } 
+.custom-select > div { display: none; position: absolute; top: 100%; left: 0; margin: 1px 0 0 -1px; width: 100%; border: 1px solid #f06c00; box-shadow: 0 0 0 3px #96dbfa; border-top: 0; background: #FFFFFF; z-index: 10; overflow: hidden; } 
+.custom-select input { width: calc(98% - 20px); margin: 8px 5px 0; padding: 5px; font-size: 16px; left: calc(50% - 49.5%); position: relative; } 
+.custom-select input:focus { border: solid 1px #f06c00; outline: none; box-shadow: 0 0 0 2px #96dbfa; } 
+.custom-select > div > div { position: relative; overflow-x: hidden; overflow-y: visible; margin: 5px; max-height: 240px; } 
+.custom-select div ul { padding: 0; margin: 0; list-style: none; } 
+.custom-select div ul li { display: none; padding: 4px 5px; padding-left:30px; margin-bottom:5px; } 
+.custom-select div ul li.active { display: block; cursor: pointer; } 
+.custom-select div ul li:hover { background: #f6f6f6; color:#000; } 
+.custom-select div ul li.option-hover { background: #f6f6f6 none repeat scroll 0% 0%; color: #000; } 
+.custom-select div ul li.option-disabled { color: #999; } 
+.custom-select div ul li.option-disabled:hover { background: #ff9999; color: purple; } 
+.custom-select div ul li.option-hover.option-disabled { background: #ff6666; color: red; } 
+.custom-select div ul li.no-results { display: none; background: #f2f2f2; color: #000; } 
+
+/* Custom Select - Open
+----------------------------------*/
+.custom-select-open { border-bottom-right-radius: 0; border-bottom-left-radius: 0; border: solid 1px #f06c00; box-shadow: 0 0 0 3px #96dbfa; } 
+.custom-select-open div { border-bottom-right-radius: 5px; border-bottom-left-radius: 5px; display: block; } 
+
+/* Hide Input Box
+----------------------------------*/
+.custom-select input.custom-select-hidden-input { position: absolute !important; top: 0 !important; left: -1000px !important; padding: 0 !important; margin: 0 !important; border: 0 !important; background: transparent !important; z-index: -1 !important; } 
+
+/* Mobile Override
+----------------------------------*/
+.custom-select-mobile select { display: inline !important; position: absolute; top: 0; left: 0;  } 
+.calculator.loanAprcalcsmall a.cta { width: 260px; margin: 0px; padding: 13px 47px; } 
+.calculator.loanAprcalcsmall form label { font-weight: normal; } 
+.calculator.loanAprcalcsmall form input.text { border-color: #707070; border-radius: 2px; color: #333; } 
+.calculator.loanAprcalcsmall .notes { color: #333; } 
+.calculator.loanAprcalcsmall form .label-suffix { font-size: 1em; } 
+.calculator.loanAprcalcsmall form input#loans-calc-small-borrowing { border-color: #707070; border-radius: 2px; color: #333; } 
+@media only screen and (max-width: 40em){
+ .calculator.loanAprcalcsmall a.cta { width: 100%; } 
+ }
+.calculator.loanAprcalcsmall .pounds { width:60px; } 
+
+.calculator.loanAprcalcsmall form .fieldWrapper { padding-right: 19px; padding-left: 19px; } 
+table { border-collapse: separate; } 
+td { border: solid 1px #000; } 
+tr:first-child th:first-child { border-top-left-radius: 5px; border: 1px solid #eeebdb; } 
+tr:first-child th:last-child { border-top-right-radius: 5px; } 
+tr:last-child th:first-child { border-bottom-left-radius: 5px; } 
+tr:last-child td:last-child { border-bottom-right-radius: 5px; } 

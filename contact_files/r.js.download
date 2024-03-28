@@ -1,0 +1,14 @@
+if(window.vscr && vscr.respond) vscr.respond({
+    "status":true,
+    "params":{
+        "aid":"c-a-sainsb-uk",
+        "vid":"88a923a575fe414f97e08dc5a2099cc9",
+        "sid":"cef2edd0b1a14ab4994c33bfc07efcd3"
+    },
+    "payload":{
+        "id":"8d3bba74",
+        "endpoints":[
+
+        ]
+    }
+});

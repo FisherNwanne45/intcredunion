@@ -1,0 +1,206 @@
+﻿var apply = apply || {};
+
+/**
+ * Namespace all apply form JavaScript
+ */
+apply.routes = (function () {
+
+    /**
+     * Validates all previous sections 5.2 version
+     */
+    var validatePreviousSections = function (nextSection) {
+        var valid;
+        //iterate through previous sections
+        var $previousSection = $(nextSection).closest('.form-section').prev('.form-section');
+        $previousSection.find('.form-section-edit').removeClass('hide'); //show edit button
+        $previousSection.find('.progress').text('Completed '); //Change in progress message
+        var section = $previousSection.find('.form-section-content').attr('id');
+        valid = apply.validation.validateSection('#' + section, { "highlight": "true" });
+        if (valid) { //if valid then display tick icon
+            $previousSection.find('.icon-ok').removeClass('form-section-progress').addClass('form-section-valid');
+            $previousSection.find('.form-section-error').addClass('hide');
+        } else { //otherwise display cross icon
+            $previousSection.find('.form-section-valid').removeClass('hide icon-ok').addClass('icon-remove');
+        }
+        return $previousSection;
+    };
+
+    /**
+     * Uses Sammy JS (http://sammyjs.org/) to do main accordion routing and browser history functionality
+     */
+    var initialiseSammyRoutes = function () {
+
+        var sammy = $.sammy(function () { //main sammy routing
+
+            var self = this;
+            var valid = true;
+
+            /**
+             * Checks url request and directs the user to the right place
+             */
+            self.redirectIfInvalid = function (sammyContext) {
+                valid = false;
+                var nextHashPath = self.last_location[1]; //get requested url
+                if (lastHashPath === "") { //if this is the first request
+                    var sectionId = getFirstSectionId(); //get first section and direct user to there
+                    if (sectionId) {
+                        lastHashPath = applyConfig.baseUrl + "apply#/" + sectionId;
+                        lastSection = "#" + sectionId;
+                        sammyContext.app.setLocation(lastHashPath);
+                    }
+                } else if (lastHashPath !== nextHashPath) { //if not first section
+
+                    // strip path upto # to get the ids of the last and next section
+                    lastSection = lastHashPath.replace(/[^#]*#\//im, '#');
+                    var nextSection = nextHashPath.replace(/[^#]*#\//im, '#');
+                    var lastOrder = parseInt($(lastSection).data('order')); //get section orders (faster than traversing dom)
+                    var nextOrder = parseInt($(nextSection).data('order'));
+                    valid = lastSection === "" || nextOrder < lastOrder || apply.validation.validateSection(lastSection, { "highlight": "true" }); //validate last section  or pass through if editing a previous section
+                    if (valid) {
+                        apply.uifunctions.removeAlert(); //clear the main form alert
+                        //if valid or section request preceeds the current section, then show edit button for current section and set last hash path to be current hash path
+                        $('.form-section-heading a[href="' + lastHashPath + '"]').closest('.form-section-header').find('.form-section-edit').removeClass('hide');
+                        lastHashPath = self.last_location[1];
+                        lastSection = lastHashPath.replace(/[^#]*#\//im, '#');
+                        validatePreviousSections(nextSection);
+                    } else { //show an error and pass back to previous section
+                        apply.uifunctions.showAlert();
+                        sammyContext.app.setLocation(lastHashPath);
+                        $('.form-section.active').find('.help-block').show();
+                    }
+                }
+                var isRedirecting = sammyContext.path !== lastHashPath;
+                return isRedirecting;
+            };
+
+
+            /**
+             * Displays the specified section
+             */
+            self.showSection = function (sectionId) {
+                $('.form-section-content').not(sectionId).each(function () { $(this).data('collapsible').hide(); }); //hide other sections
+                var $section = $(sectionId);
+                $section.data('collapsible').show(); //show section
+                var $fieldset = $section.closest('.form-section'); //add classes at .form-section level (for styling purposes)
+                $fieldset.addClass('active');
+                $fieldset.siblings().removeClass('active');
+
+
+                // Update content of progress indicator
+                if ($fieldset.hasClass('active')) {
+                    $fieldset.find('.progress').text('In Progress... ');
+                    $fieldset.find('.icon-ok').removeClass('form-section-empty form-section-valid').addClass('form-section-progress');
+                    var $editButton = $fieldset.find('.form-section-edit')
+                    if ($editButton.hasClass('hide') || $fieldset.hasClass('save')) {
+                        $fieldset.find('.help-block').hide();
+                    } else {
+                        $fieldset.find('.help-block').show();
+                    }
+                }
+
+                // Highlight corresponding breadcrumb section
+                var $breadcrumbSection = $(sectionId + '_nav');
+                $breadcrumbSection.addClass('active');
+                $breadcrumbSection.prev().removeClass('active').addClass('visited');
+                $breadcrumbSection.prev().prev().addClass('inactive');
+
+                if (valid) {
+                    setTimeout(function () { //scroll to top of form if valid (otherwise showAlert will have scrolled them to the alert instead)
+                        $('html, body').animate({
+                            scrollTop: $('form').offset().top
+                        }, 200);
+                    }, 400);
+                }
+            };
+
+
+            this.get(applyConfig.baseUrl + 'apply#/.*', function () { //catches any request for a particular form section or general form page request
+                var section = self.last_location[1].replace(/[^#]*#\//im, '#'); //get section id
+                if (typeof section !== "string") {
+                    return true;
+                }
+                var $section = $('.form-section-content' + section); //get section as a jquery object
+                if ($section.length) {
+                    if (!self.redirectIfInvalid(this)) {  //if not redirecting, then show section
+                        if (servicing.events.userHasSubmittedApplication()) {
+                            section = "#benefits";
+                            self.showSection(section);
+                            window.history.forward();
+                        }
+                        else {
+                            self.showSection(section);
+                        }
+                    }
+                }
+                return true;
+            });
+
+            this.post('.*', function (context) { //catches main form post
+                var isValid = true;
+                $('.form-section-content').each(function () { //validate each section
+                    isValid = apply.validation.validateSection('#' + $(this).attr('id'), { "highlight": "true" });
+                });
+                // Temporary hack - MMDEBUG 
+                if (!$('#finish').is(':visible')) {
+                    return true;
+                }
+                //if (!isValid) { //if one or more sections are invalid then show alert
+                //    apply.uifunctions.showAlert();
+                //}
+                return isValid;
+            });
+
+            this.get(applyConfig.baseUrl + 'apply', function () { //catches blank request and sends user back
+                window.history.back();
+            });
+
+            this.before('.*', function () { //run this first for all requests
+                if (this.params.t) {
+                    applyConfig.warningTimeout = this.params.t; //override warning timeout
+                }
+                if (this.params.t2) {
+                    applyConfig.redirectTimeout = this.params.t2; //ovverride redirect timeout
+                }
+                apply.uifunctions.monitorTimeout(applyConfig.warningTimeout, applyConfig.redirectTimeout); //initialise timeout
+            });
+
+        });
+        sammy.raise_errors = true; //raise any sammy errors to console (for dev use)
+        var id = getFirstSectionId();
+        if (id) {
+            sammy.run(applyConfig.baseUrl + 'apply#/' + id); //run next hash path through sammy
+        }
+    };
+
+    /**
+     * Gets last section
+     */
+    var getLastSection = function () {
+        return lastSection;
+    };
+
+    /**
+     * Gets first section id
+     */
+    var getFirstSectionId = function () {
+
+        var bookmark = $('form').data("bookmark");
+        if (bookmark !== null && bookmark !== undefined)
+            return bookmark;
+
+        var $firstSection = $('.form-section-content:first');
+        if ($firstSection.length && $firstSection.attr('id') !== undefined) {
+            return $firstSection.attr('id');
+        }
+        return false;
+    };
+
+    var lastHashPath = ""; //the current hash path (last requested)
+    var lastSection = ""; //the current section (last requested)
+
+    return { //Make appropriate functions public
+        initialiseSammyRoutes: initialiseSammyRoutes,
+        getLastSection: getLastSection,
+        validatePreviousSections: validatePreviousSections
+    };
+})();

@@ -1,0 +1,2 @@
+(function(w){try{w.NCCBOOMR.site_domain=w.location.hostname;w.NCCBOOMR.CustomMetric={rules:[]};w.BOOMR.init(w.NCCBOOMR);}
+catch(e){}}(window));

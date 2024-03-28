@@ -1,0 +1,63 @@
+﻿/*
+*  Browser detaction warning block Js 
+*
+*/
+
+da.provide("da.auth.BrowserWarningCtrl");
+
+da.require("da.services");
+da.require("da.ui.SpinnerWidget");
+
+da.auth.BrowserWarningCtrl = function () {
+    
+    this.eventService = null;
+    da.injector.inject(this);
+    
+    // using plugin for browser detaction - global veriable
+    // location - static\js\vendor\bowser.js
+
+    var binfo = bowser;
+    var showbw = false;
+
+    // IE
+    if (binfo.msie && binfo.version < 11) {
+        showbw = true;
+    }
+    // Chrome
+    if (binfo.chrome && binfo.version < 30) { 
+        showbw = true;
+    }
+    // Firefox 
+    if (binfo.firefox && binfo.version < 27 && !binfo.ios) {
+        showbw = true;
+    }
+    // opera 
+    if (binfo.opera && binfo.version < 17) {
+        showbw = true;
+    }
+    // Safari - iOS 5  
+    if (binfo.safari && binfo.ios && binfo.version < 5) {
+        showbw = true;
+    }
+    // Safari - OSX - mac 7 
+    if (binfo.safari && binfo.mac && binfo.version < 7) {
+        showbw = true;
+    }
+
+    var isLoginPage = $("#loginForm").length > 0;
+
+    // show browser warning only on login page 
+    if (showbw && isLoginPage) {
+        $(".browser-warning").slideDown();
+    } 
+    // hide browser warning if user close it
+    $(".close-btn").click(function() {
+        $(".browser-warning").slideUp();
+    });
+};
+
+//called when the page is ready. 
+da.onInit(function () {
+    new da.auth.BrowserWarningCtrl();
+});
+

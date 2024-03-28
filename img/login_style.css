@@ -1,0 +1,350 @@
+body {
+	margin-left: 0px;
+	margin-top: 0px;
+	margin-right: 0px;
+	margin-bottom: 0px;
+}
+
+.loginBg {
+	/*BACKGROUND-COLOR: #e3ecfd*/
+	BACKGROUND-COLOR: #FFFFFF
+}
+.border1 {
+	BACKGROUND-COLOR: #CCCCCC
+}
+.border2 {
+	BACKGROUND-COLOR: #ffffff
+}
+.border3 {
+	BACKGROUND-COLOR: #CCCCCC
+}
+.txtField {
+	BORDER-RIGHT: #A5ACB2 1px solid; BORDER-TOP: #A5ACB2 1px solid; MARGIN-TOP: 5px; FONT-SIZE: 70%; MARGIN-BOTTOM: 5px; BORDER-LEFT: #A5ACB2 1px solid; BORDER-BOTTOM: #A5ACB2 1px solid; FONT-FAMILY: Tahoma; HEIGHT: 23px; BACKGROUND-COLOR: #FFFFFF
+}
+
+.lable {
+	FONT-WEIGHT: bold; FONT-SIZE: 70%; FONT-FAMILY: Tahoma
+}
+
+.lable_new {
+	FONT-FAMILY: Arial;
+	font-style: normal;
+	FONT-WEIGHT: bold; 
+	FONT-SIZE: 80%; 
+	/*color: #336699;*/
+	color: #003366;
+	
+}
+
+.txtNormal_new
+{
+	font-family: Arial,Helvetica,sans-serif;
+	font-size: 70%;
+	font-style: normal;
+	font-weight: normal;
+	color: #000000;
+	text-align:left;
+	text-decoration: none;
+	padding-left:3px;
+}
+
+
+.txtNormal {
+	COLOR: #353537; LINE-HEIGHT: 15px; FONT-FAMILY: Tahoma
+}
+.txtNormal A:hover {
+	 COLOR: FF6600; LINE-HEIGHT: 15px; FONT-FAMILY: Tahoma
+}
+.formButton {
+	 BORDER-RIGHT: #E47100 1px solid; 
+	 BORDER-TOP: #E47100 1px solid;
+	 FONT-WEIGHT: bold; 
+	 FONT-COLOR: #FFFFFF;
+	 FONT-SIZE: 11px; 
+	 VERTICAL-ALIGN: middle; 
+	 BORDER-LEFT: #E47100 1px solid; 
+	 WIDTH: 74px; 
+	 CURSOR: hand; 
+	 MARGIN-RIGHT: 10px; 
+	 BORDER-BOTTOM: #E47100 1px solid; 
+	 FONT-FAMILY: Tahoma; 
+	 HEIGHT: 23px; 
+	 background-image:url(../images/buttonlogin_bg.gif); 
+	 TEXT-ALIGN: center;
+}
+
+.formButton1 {
+	BORDER-RIGHT: #E47100 1px solid; 
+	BORDER-TOP: #E47100 1px solid;
+	 FONT-WEIGHT: bold; 
+	 FONT-SIZE: 10px; 
+	 VERTICAL-ALIGN: middle; 
+	 BORDER-LEFT: #E47100 1px solid; 
+	 WIDTH: 163px; 
+	 CURSOR: hand; 
+	 MARGIN-RIGHT: 10px; 
+	 BORDER-BOTTOM: #E47100 1px solid; 
+	 FONT-FAMILY: Tahoma; 
+	 HEIGHT: 23px; 
+	 background-image:url(../images/buttonlogin_bg.gif);  
+	 TEXT-ALIGN: center
+}
+.footer {
+	FONT-WEIGHT: normal; FONT-SIZE: 70%; COLOR: #999999; FONT-STYLE: normal; FONT-FAMILY: Tahoma; TEXT-DECORATION: none; padding-left:10px; padding-right:10px; padding-top:5px;
+}
+.infoLinks {
+	FONT-WEIGHT: normal; COLOR: #666666; FONT-STYLE: normal; FONT-FAMILY: Tahoma; TEXT-DECORATION: none
+}
+
+.infoLinks_login
+{
+	font-family: Arial,Helvetica,sans-serif;
+	font-style: normal;
+	font-weight: normal;
+	font-size: 80%;
+	color: #33CCFF;
+	text-decoration: underline;
+}
+
+.Login_txt
+{
+	font-family: Arial,Helvetica,sans-serif;
+	font-style: normal;
+	font-weight: normal;
+	font-size: 70%;
+	color: #000066;
+	text-decoration: none;
+}
+
+
+.Login_txtwithoutfont
+{
+	font-family: Arial,Helvetica,sans-serif;
+	font-style: normal;
+	font-weight: normal;
+	font-size: 12px;
+	color: #000066;
+	text-decoration: none;
+}
+
+.Login_txt_logo
+{
+	font-family: Arial,Helvetica,sans-serif;
+	font-style: normal;
+	font-weight: normal;
+	font-size: 12px;
+	color: #003366;
+	text-decoration: none;
+}
+
+
+
+
+.infoLinks:hover {
+	FONT-WEIGHT: normal; COLOR: #FF6600; FONT-STYLE: normal; FONT-FAMILY: Tahoma; TEXT-DECORATION: underline
+}
+.commonLinks {
+	FONT-WEIGHT: normal; FONT-SIZE: 11px; COLOR: #0033cc; FONT-STYLE: normal; FONT-FAMILY: Tahoma; TEXT-DECORATION: none
+}
+.commonLinks:hover {
+	FONT-WEIGHT: normal; FONT-SIZE: 11px; COLOR: #FF6600; FONT-STYLE: normal; FONT-FAMILY: Tahoma; TEXT-DECORATION: underline
+}
+.redSeperator {
+	FONT-WEIGHT: normal; FONT-SIZE: 70%; COLOR: #000000; FONT-STYLE: normal; FONT-FAMILY: Tahoma; TEXT-DECORATION: none
+}
+
+
+.redSeperator_login {
+	FONT-WEIGHT: normal; FONT-SIZE: 70%; COLOR: #33CCFF; FONT-STYLE: normal; FONT-FAMILY: Tahoma; TEXT-DECORATION: none
+}
+.txtData {
+	FONT-SIZE: 11px; COLOR: #000000; FONT-FAMILY: Tahoma
+}
+.txtHeader {
+	FONT-WEIGHT: bold; FONT-SIZE: 14px; COLOR: #000000; FONT-FAMILY: Tahoma
+}
+
+.headerBg
+{
+	background-image: url(../images/header_bkg.gif);
+	background-repeat: repeat-x;
+}
+
+.txtHeader_new {
+	FONT-WEIGHT: bold; 
+	FONT-SIZE: 30px; 
+	COLOR: #fff;
+	FONT-FAMILY: Arial Narrow
+}
+
+.txtSubHeader {
+	FONT-WEIGHT: bold; 
+	FONT-SIZE: 16px; 
+	COLOR: #000066;
+	FONT-FAMILY: Arial Narrow
+}
+
+.dropdown {
+	FONT-WEIGHT: normal; FONT-SIZE: 11px; WIDTH: 163px; FONT-FAMILY: tahoma; HEIGHT: 28px
+}
+a.return:link {
+	font-family: tahoma;
+	
+	color: #000066;
+	text-decoration: underline;
+	font-weight: bold;
+}
+
+
+a.return:visited {
+	font-family: tahoma;
+	
+	color: #000066;
+	text-decoration: underline;
+	font-weight: bold;
+}
+a.return:hover {
+	font-family: tahoma;
+	
+	font-weight: bold;
+	color: #E47100;
+	text-decoration: underline;
+}
+
+.span_txtzm {
+
+font-size: 70%;
+}
+
+.href_txtzm
+{
+font-size: 70%;
+
+}
+
+.href_txtzm A:hover {
+	 COLOR: FF6600; LINE-HEIGHT: 15px; FONT-FAMILY: Tahoma
+}
+
+/* .NormalBut 
+{
+	font-family: Tahoma;
+	
+	color: #000000;
+	background-color: #E47100; 
+	font-weight: bold;
+    	font-size: 70%;
+	margin-right: 10px;
+	vertical-align: middle;
+	text-align: center;
+	border-top: 1px solid #E47100;
+	border-right: 1px solid #E47100;
+	border-bottom: 1px solid #E47100;
+	border-left: 1px solid #E47100;
+	cursor: hand;
+	TEXT-ALIGN: center
+}*/
+
+
+.NormalBut 
+{
+	font-family: Tahoma;
+	color: #FFFFFF;
+	background-color: #22AAFF; 
+	font-weight: normal;
+    	font-size: 70%;
+	margin-right: 10px;
+	vertical-align: middle;
+	text-align: center;
+	border-top: 1px solid #22AAFF;
+	border-right: 1px solid #22AAFF;
+	border-bottom: 1px solid #22AAFF;
+	border-left: 1px solid #22AAFF;
+	cursor: hand;
+}
+
+.NormalBut_Login
+{
+	background-image: url(../images/cfs/button_login_V3.gif);
+	
+	width: 69px;
+	height: 26px;
+	border-top: 0px solid #22AAFF;
+	border-right: 0px solid #22AAFF;
+	border-bottom: 0px solid #22AAFF;
+	border-left: 0px solid #22AAFF;	
+	cursor: hand;
+
+}
+
+.NormalBut_Proceed
+{
+	background-image: url(../images/cfs/proceed.gif);
+	
+	width: 69px;
+	height: 26px;
+	border-top: 0px solid #22AAFF;
+	border-right: 0px solid #22AAFF;
+	border-bottom: 0px solid #22AAFF;
+	border-left: 0px solid #22AAFF;	
+	cursor: hand;
+
+}
+
+.NormalBut_Login_Temp
+{
+	background-image: url(../images/cfs/proceed_GS.gif);
+	
+	width: 69px;
+	height: 26px;
+	border-top: 0px solid #22AAFF;
+	border-right: 0px solid #22AAFF;
+	border-bottom: 0px solid #22AAFF;
+	border-left: 0px solid #22AAFF;	
+	cursor: hand;
+
+}
+
+.NormalBut_secure
+{
+	font-family: "Arial,Unicode,MS";
+	color: #FFFFFF;
+	font-weight: normal;
+    	font-size: 80%;
+    	text-decoration:None;
+    	/*background-color: #22AAFF; 
+	margin-right: 10px;
+	vertical-align: middle;
+	text-align: center;
+	border-top: 1px solid #22AAFF;
+	border-right: 1px solid #22AAFF;
+	border-bottom: 1px solid #22AAFF;
+	border-left: 1px solid #22AAFF;
+	cursor: hand;*/
+    	
+}
+
+.Secure_Link
+{
+background-image: url(../images/cfs/security_logo_new1.jpg);
+width: 136px;
+height: 21px;
+
+}
+
+
+
+.Verisign_Link
+{
+
+background-image: url(../images/cfs/Verisign_logo.gif);
+width: 115px;
+height: 62px;
+
+
+}
+
+.txt_zm{
+
+ COLOR: #353537; LINE-HEIGHT: 15px; FONT-FAMILY: Tahoma
+}

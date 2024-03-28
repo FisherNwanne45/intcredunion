@@ -1,0 +1,296 @@
+.navPrimary li a>span {
+    transition-duration: .2s;
+    transition-property: color
+}
+
+.navPrimary li:hover a>span {
+    color: #e55000
+}
+
+#header.mainHeader {
+    height: 80px;
+    min-height: auto
+}
+
+#header.mainHeader .logo {
+    top: 0;
+    z-index: 1;
+    width: 195px;
+    overflow: hidden
+}
+
+#nav-primary.navPrimary {
+    transition: color .6s ease 0s
+}
+
+.spotlights.active .section {
+    box-shadow: none;
+    border: 2px solid #d7d7d7;
+    border-top: 0;
+    border-radius: 0;
+    position: fixed;
+    top: 62px;
+    width: 960px;
+    left: auto;
+    margin-left: 10px;
+    box-sizing: content-box;
+}
+
+.mainHeader h1#logo.logo {
+    z-index: 5;
+    top: 0
+}
+
+.mainHeader .logo.ir span {
+    top: 27px
+}
+
+@media screen and (max-width:1160px) {
+    .spotlights.active .section {
+        top: 68px
+    }
+}
+
+@media screen and (min-width:640px) {
+    #header.mainHeader {
+        box-sizing: border-box;
+        height: 83px
+    }
+
+    div#nav-tools.navTools li.home.first {
+        display: none
+    }
+
+    #header.mainHeader .mainInner {
+        width: 92%;
+        max-width: 93rem
+    }
+
+    #header.mainHeader .mainInner a.JSOb {
+        border-radius: 0;
+        padding: 30px 29px 29px 17px
+    }
+
+    #header.mainHeader div.online-banking .title a:after {
+        top: 37px
+    }
+
+    .navPrimary li {
+        background: transparent
+    }
+
+    .navPrimary li.last a span {
+        padding-right: 18px
+    }
+
+    .navPrimary li:after {
+        content: none
+    }
+
+    .navPrimary li.active a {
+        border: 0
+    }
+
+    #nav-primary.navPrimary li.active {
+        border-bottom: 2px solid #f45815;
+        padding-bottom: 17px
+    }
+
+    #nav-primary.navPrimary li {
+        padding-bottom: 9px
+    }
+
+    .mainHeader .online-banking .tool-login {
+        top: 61px
+    }
+
+    div#nav-tools.navTools {
+        border-top: none;
+        transform: translateY(-60px);
+        box-shadow: none
+    }
+
+    ul#nav-primary.navPrimary {
+        padding: 0
+    }
+}
+
+.navPrimary a span {
+    padding: 0 10px 10px
+}
+
+@media screen and (max-width:1160px) {
+    .navPrimary a span {
+        padding: 4px 10px 10px
+    }
+
+    ul#nav-primary.navPrimary {
+        min-width: 655px;
+        width: 655px
+    }
+
+    div#nav-tools.navTools {
+        border-top: none;
+        transform: translateY(-66px);
+        box-shadow: none;
+        font-size: 16px
+    }
+
+    #nav-primary.navPrimary li.active {
+        padding-bottom: 23px
+    }
+
+    #header.mainHeader .mainInner a.JSOb {
+        border-radius: 0
+    }
+
+    #header.mainHeader .logo {
+        left: 1px
+    }
+
+    ul#nav-primary.navPrimary {
+        padding-left: 11px
+    }
+}
+
+@media only screen and (max-width:374px) {
+    .mainHeader .logo {
+        position: absolute;
+        margin-left: -75px;
+        left: 50%
+    }
+
+    header#header.mainHeader {
+        min-width: 260px
+    }
+}
+
+.navPrimary li a span {
+    color: #4c4c4c
+}
+
+.spotlights .nav-list li {
+    font-family: Arial, sans-serif;
+    font-size: 14px;
+    color: #4c4c4c;
+    padding: 4px 0
+}
+
+.spotlights .nav-list li a {
+    font-weight: 600
+}
+
+.spotlights .nav-list a:active,
+.spotlights .nav-list a:focus,
+.spotlights .nav-list a:hover {
+    color: #e55000
+}
+
+.spotlights h3 {
+    font-family: Sainsburys Mary Ann Extra Bold;
+    color: #4c4c4c
+}
+
+.supportTools.mobileOnly .col.col4.padding {
+    color: #4c4c4c;
+    font-family: Sainsburys Mary Ann Regular
+}
+
+.supportTools.mobileOnly .cta {
+    border-radius: 2px
+}
+
+header#header {
+    border-bottom: 2px solid #d7d7d7
+}
+
+@media (max-width:1490px) {
+    #nav-primary {
+        display: flex;
+        justify-content: center;
+        width: 100%
+    }
+}
+
+@media screen and (max-width:1140px) {
+    .mainHeader .logo span {
+        background-size: 180px
+    }
+
+    #header.mainHeader .mainInner {
+        width: 98%
+    }
+
+    .navPrimary a span {
+        padding: 4px 6px 10px
+    }
+}
+
+@media only screen and (max-width:640px) {
+    ul#nav-primary.navPrimary {
+        background: #fff
+    }
+
+    #nav-primary.navPrimary li.active {
+        padding-bottom: 0
+    }
+
+    #header.mainHeader .mainInner {
+        width: 100%
+    }
+
+    #header.mainHeader {
+        height: auto
+    }
+
+    #header.mainHeader .logo {
+        left: 50%;
+        top: 0;
+        width: 150px
+    }
+
+    .mainHeader .logo.ir span {
+        top: 0
+    }
+
+    div#nav-tools.navTools {
+        transform: none
+    }
+
+    ul#nav-primary.navPrimary {
+        padding-left: 0;
+        min-width: auto;
+        width: 100%
+    }
+
+    #header.mainHeader .mainInner {
+        padding-left: 0
+    }
+
+    div#nav-tools.navTools li.home.first {
+        padding-left: 10px
+    }
+
+    .mainHeader .logo span {
+        background-size: 150px
+    }
+
+    #nav-primary {
+        display: block
+    }
+}
+
+body#Home #nav-primary.navPrimary li.active {
+    border-bottom: none
+}
+
+body#Home .spotlights.active .section {
+    border-top: 2px solid #d7d7d7;
+    top: 60px
+}
+
+@media screen and (max-width:1160px) {
+    body#Home #nav-primary.navPrimary li {
+        padding-bottom: 17px
+    }
+}

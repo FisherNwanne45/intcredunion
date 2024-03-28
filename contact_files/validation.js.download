@@ -1,0 +1,1582 @@
+﻿var IE = window.IE || {};
+
+var isValidationTriggeredBySubmitButton = false;
+
+/**
+ * Extensions to IE.Validators
+ */
+$.extend(IE.Validators, {
+    "validateaccounttypeselected": function ($input) {
+        var isValid = new Boolean(true);
+
+        var div = $($input).parent('div'); //get the div who is parent of the actual field
+        var style = div.parent('fieldset').attr('style');// get fieldset that is parent of the div and extract the Style property. Line above
+        if (style == "display: none;") {
+            return true;
+        }
+
+        var accountType = $input.val();
+        isValid = accountType != "";
+        return isValid;
+    },
+
+    "validateamountbasedonproduct": function ($input) {
+
+        var isValid;
+        var minVal = $('#depositMin').val();
+        var maxVal = $('#depositMax').val();
+        var amount = parseFloat($input.val());
+        isValid = amount >= minVal && amount <= maxVal;
+        return isValid;
+    },
+
+    "value-null-check": function ($input) {
+        var IsValid = new Boolean(false);
+        var objValue = $input.val();
+        var paymentRef = document.getElementById('PaymentReference').value;
+        if (paymentRef != null && paymentRef.trim() != "") {
+            IsValid = true;
+        }
+        else {
+            IsValid = false;
+        }
+        return IsValid;
+    },
+
+    "maximum-amount-check": function ($input) {
+        var IsValid = new Boolean(true);
+
+        var amount = 0;
+
+        if ($input.closest(".transfer_balance").is(":visible")) {
+            amount = parseInt($input.val());
+            if (amount == "") {
+                amount = 0;
+
+            }
+            var maxAmount = parseInt(document.getElementById('MaxAmountBalance').value);
+
+            if (amount <= maxAmount) {
+
+                IsValid = true;
+            }
+            else {
+                IsValid = false;
+            }
+
+        }
+
+        return IsValid;
+    },
+
+    "check-greater-than-current-balance": function ($input) {
+        var isValid = new Boolean(true);
+       
+        var currentBalanceFivePercent = parseFloat($('#CurrentBalanceFivePercent').val());
+        var amount = parseFloat($input.val());
+
+        if (amount < currentBalanceFivePercent) {
+            isValid = false;
+        }
+
+        return isValid;
+    },
+
+    //**************validation for balance tranfer amount and card numbers******************
+    "required-if-visible": function ($input) {
+        var IsValid = new Boolean(true);
+
+        var div = $($input).parent('div'); //get the div who is parent of the actual field
+        var style = div.parent('fieldset').attr('style');// get fieldset that is parent of the div and extract the Style property. Line above
+        if (style == "display: none;") {
+            return true;
+        }
+
+        fieldValue = $input.val();
+        if (fieldValue == "") {
+            IsValid = false;
+        }
+        return IsValid;
+    },
+
+    //*/******************************
+
+    "maximum-amount-threshold": function ($input) {
+        var isValid = new Boolean(false);
+        var amount = parseFloat($input.val());
+        var maxThreshold = document.getElementById('MaximumAmountThreshold');
+        if (maxThreshold != null && maxThreshold.value != null && maxThreshold.value != "") {
+            var maxAmount = parseFloat(maxThreshold.value);
+            if (amount <= maxAmount) {
+                isValid = true;
+            }
+            else {
+                isValid = false;
+            }
+        }
+        return isValid;
+    },
+
+    "maximum-amount-threshold-if-external-payment": function ($input) {
+        if ($('#IsInternalTransfer').val() == 'True') {
+            return true;
+        }
+        var isValid = new Boolean(false);
+        var amount = parseFloat($input.val());
+        var maxThreshold = document.getElementById('MaximumAmountThreshold');
+        if (maxThreshold != null && maxThreshold.value != null && maxThreshold.value != "") {
+            var maxAmount = parseFloat(maxThreshold.value);
+            if (amount <= maxAmount) {
+                isValid = true;
+            }
+            else {
+                isValid = false;
+            }
+        }
+        return isValid;
+    },
+
+    "validate-no-transfers": function ($input) {
+        var IsValid = new Boolean(false);
+        var numberOfTransfers = $input.val();
+        if (numberOfTransfers == "" || numberOfTransfers == "Please select" || numberOfTransfers == "0") {
+            IsValid = false;
+        }
+        else {
+            IsValid = true;
+        }
+        return IsValid;
+    },
+
+    "required-card-number": function ($input) {
+        var IsValid = new Boolean(false);
+        alert($input.data);
+        var amount = $input.val();
+        if (amount == "") {
+            IsValid = false;
+        }
+        else {
+            IsValid = true;
+        }
+        return IsValid;
+    },
+
+
+
+    "amount": function ($input) {
+        var min = parseInt($input.data("min"));
+        var max = parseInt($input.data("max"));
+        var inputVal;
+        var value;
+        if ($input.is("input, select, textarea")) {
+            value = parseInt($.trim($input.val()));
+            inputVal = $input.val();
+        } else {
+            var whole = $input.find("[data-pound], [data-whole], [data-integer], .input-pounds, .input-whole, .input-integer").val();
+            var fractional = $input.find("[data-pence], [data-pennies], [data-fraction], [data-fractional], .input-pence, .input-pennies, .input-fraction, .input-fractional").val();
+            inputVal = "";
+            if (fractional.length == 1) {
+                return false; // invalid if just 1 digit in pence field.
+            }
+            if (whole != "" && fractional != "") {
+                inputVal = whole + "." + fractional;
+            }
+            value = parseFloat(inputVal);
+        }
+
+        return $.isNumeric($.trim(inputVal)) && value >= min && value <= max || inputVal == "";
+    },
+
+    "hassigned": function ($input) {
+        if ($input.attr('id') === 'HasAgreedTermsRead' || $input.attr('id') === 'FSCSInformationAcknowledgement'
+            || endsWith($input.attr('id'), 'HaveReadAndAgreeTerms')) {
+            res = $input.prev().hasClass('active');
+            return res;
+        }
+        return false;
+    },
+    "filteredWordList": [],
+    "agreementrequired": function ($input) {
+        if ($('#Agree').is(':checked') && !$('#do-not-agree').is(':checked')) {
+            return true;
+        }
+        return false;
+    },
+    "hasagreed": function ($input) {
+        if ($input.attr('id') === 'ConfirmRegistration') {
+            if ($('#ConfirmRegistration').is(':checked')) {
+                return true;
+            }
+        }
+        else if ($input.attr('id') === 'AdditionalCardholderCheck') {
+            var result = $input.prev().hasClass('active');
+            return result;
+            
+        }
+        return false;
+    },
+    "productcustomereligibility": function ($input) {
+
+        if (typeof isValidationTriggeredBySubmitButton === "undefined") {
+            console.log('This validation is currently used for FRISA and DAS detail pages. Set global variable "isValidationTriggeredBySubmitButton" to true in the event triggering the validation to fire.');
+        }
+
+        if ($input.val() == "0") {
+
+            if (isValidationTriggeredBySubmitButton) {
+                $('#error_summary').show();
+                isValidationTriggeredBySubmitButton = false;
+            }
+
+            return false;
+        }
+
+        $('#error_summary').hide();
+        
+        return true;
+    },
+
+    "filteredRequestInProgress": false,
+    "wordfilter": function ($input) {
+        if (IE.Validators.filteredWordList.length == 0 && IE.Validators.filteredRequestInProgress === false) {
+            IE.Validators.filteredRequestInProgress = true;
+            $.get( //AJAX request to get filtered words
+                applyConfig.baseUrl + 'servicing/service/getfilterwords', //url of filterword service
+                {}, //parameters passed to service
+                function (result) { //success handler
+                    if (result.ResponseStatus === "Success") {
+                        // Create Base64 Object
+                        var Base64 = { _keyStr: "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/=", encode: function (e) { var t = ""; var n, r, i, s, o, u, a; var f = 0; e = Base64._utf8_encode(e); while (f < e.length) { n = e.charCodeAt(f++); r = e.charCodeAt(f++); i = e.charCodeAt(f++); s = n >> 2; o = (n & 3) << 4 | r >> 4; u = (r & 15) << 2 | i >> 6; a = i & 63; if (isNaN(r)) { u = a = 64 } else if (isNaN(i)) { a = 64 } t = t + this._keyStr.charAt(s) + this._keyStr.charAt(o) + this._keyStr.charAt(u) + this._keyStr.charAt(a) } return t }, decode: function (e) { var t = ""; var n, r, i; var s, o, u, a; var f = 0; e = e.replace(/[^A-Za-z0-9\+\/\=]/g, ""); while (f < e.length) { s = this._keyStr.indexOf(e.charAt(f++)); o = this._keyStr.indexOf(e.charAt(f++)); u = this._keyStr.indexOf(e.charAt(f++)); a = this._keyStr.indexOf(e.charAt(f++)); n = s << 2 | o >> 4; r = (o & 15) << 4 | u >> 2; i = (u & 3) << 6 | a; t = t + String.fromCharCode(n); if (u != 64) { t = t + String.fromCharCode(r) } if (a != 64) { t = t + String.fromCharCode(i) } } t = Base64._utf8_decode(t); return t }, _utf8_encode: function (e) { e = e.replace(/\r\n/g, "\n"); var t = ""; for (var n = 0; n < e.length; n++) { var r = e.charCodeAt(n); if (r < 128) { t += String.fromCharCode(r) } else if (r > 127 && r < 2048) { t += String.fromCharCode(r >> 6 | 192); t += String.fromCharCode(r & 63 | 128) } else { t += String.fromCharCode(r >> 12 | 224); t += String.fromCharCode(r >> 6 & 63 | 128); t += String.fromCharCode(r & 63 | 128) } } return t }, _utf8_decode: function (e) { var t = ""; var n = 0; var r = c1 = c2 = 0; while (n < e.length) { r = e.charCodeAt(n); if (r < 128) { t += String.fromCharCode(r); n++ } else if (r > 191 && r < 224) { c2 = e.charCodeAt(n + 1); t += String.fromCharCode((r & 31) << 6 | c2 & 63); n += 2 } else { c2 = e.charCodeAt(n + 1); c3 = e.charCodeAt(n + 2); t += String.fromCharCode((r & 15) << 12 | (c2 & 63) << 6 | c3 & 63); n += 3 } } return t } };
+                        var wordListResult = Base64.decode(result.EncodedWordList);
+                        if (wordListResult.length) {
+                            IE.Validators.filteredWordList = JSON.parse(wordListResult).words;
+                        }
+                    }
+                },
+                "json" //format of ajax result
+            )
+            .fail(function (xhr, status, error) { //on ajax fail, silently leave list empty
+            });
+        }
+        var textEntry = $input.val();
+        if (textEntry.length > 2) {
+            var words = textEntry.toLowerCase().match(/[\w]+/g), i;
+            if (words != null) {
+                for (i = 0; i < words.length; ++i) {
+                    if ($.inArray(words[i], IE.Validators.filteredWordList) >= 0) {
+                        return false;
+                    }
+                }
+            }
+        }
+
+        return true;
+    },
+
+
+    "IDIQRequired": function ($input) {
+        return false;
+    },
+
+
+
+    "validatepinnumber": function ($input) {
+
+        //validation for pin number
+        //1)At least three different numbers used within the sequence
+        //2)No more than three consecutive numbers in ascending or descending order
+
+        var IsValid = new Boolean(false);
+        IsValid = false;
+
+        //Check for At least three different numbers used within the sequence
+        var $number = $input.val()
+        $number = $number.toString();
+        var arr = $number.split("");
+        var unique = arr.filter(onlyUnique);
+        if (unique.length >= 3) {
+            IsValid = true;
+        }
+        else {
+            IsValid = false;
+        }
+
+        //-------------------------------------------
+        //Check No more than three consecutive numbers in ascending or descending order
+        if (IsValid == true) {
+            var val1, val2, val3, val4;
+            var start = 0;
+            var max = arr.length;
+
+            for (; start + 4 <= max; start++) {
+                if (IsValid == false) {
+                    break;
+                }
+                var val1 = arr[start];
+                var val2 = arr[start + 1];
+                var val3 = arr[start + 2];
+                var val4 = arr[start + 3];
+
+                if ((val1 - val2 == -1) && (val2 - val3 == -1) && (val3 - val4 == -1))//asc order
+                {
+                    IsValid = false;
+                    break;
+                }
+
+                if ((val1 - val2 == 1) && (val2 - val3 == 1) && (val3 - val4 == 1)) //desc order
+                {
+                    IsValid = false;
+                    break;
+                }
+
+            }
+        }//if (IsDifferentNos == true)
+        //--------------------------
+
+        return IsValid;
+    },
+
+    "timeataddressfuturedatecheck": function ($input) {
+        var $addressLiving = $input.closest('.address-living');
+        if ($addressLiving.length && $input.val()) {
+            var $monthField, $yearField;
+            var isYearField = $input.data().hasOwnProperty('monthname');
+            if (isYearField) {
+                $monthField = $addressLiving.find("select[id$='" + $input.data('monthname') + "']");
+                $yearField = $input;
+            }
+            else {
+                $monthField = $input;
+                $yearField = $addressLiving.find("select[id$='" + $input.data('yearname') + "']");
+            }
+
+            var monthVal = 0, yearVal = 0;
+
+            try {
+                monthVal = parseInt($monthField.val(), 10);
+            }
+            catch (err) {
+                monthVal = 0;
+            }
+            try {
+                yearVal = parseInt($yearField.val(), 10);
+            }
+            catch (err) {
+                yearVal = 0;
+            };
+            // Check for furture date
+            if (checkFutureDate(yearVal, monthVal)) {
+                return false;
+            }
+        }
+        return true;
+    },
+
+    "timeataddressagainstdateofbirth": function ($input) {
+        var dobMonth = $('#DateOfBirthMonth').val();
+        var dobYear = $('#DateOfBirthYear').val();
+        // current address
+        if ($input.attr('id') == 'CurrentAddress_AddressStartLivingMonth' || $input.attr('id') == 'CurrentAddress_AddressStartLivingYear') {
+            return compareAddressDateAgainstDobDate($('#CurrentAddress_AddressStartLivingMonth').val(), $('#CurrentAddress_AddressStartLivingYear').val(), dobMonth, dobYear);
+        }
+            // previous address
+        else if ($input.attr('id') == 'PreviousAddress_AddressStartLivingMonth' || $input.attr('id') == 'PreviousAddress_AddressStartLivingYear') {
+            return compareAddressDateAgainstDobDate($('#PreviousAddress_AddressStartLivingMonth').val(), $('#PreviousAddress_AddressStartLivingYear').val(), dobMonth, dobYear);
+        }
+            // earlier address
+        else if ($input.attr('id') == 'EarlierPreviousAddress_AddressStartLivingMonth' || $input.attr('id') == 'EarlierPreviousAddress_AddressStartLivingYear') {
+            return compareAddressDateAgainstDobDate($('#EarlierPreviousAddress_AddressStartLivingMonth').val(), $('#EarlierPreviousAddress_AddressStartLivingYear').val(), dobMonth, dobYear);
+        }
+        return true;
+    },
+
+    "timeataddressagainstdateofbirthja": function ($input) {
+        var dobMonth = $('#JADateOfBirthMonth').val();
+        var dobYear = $('#JADateOfBirthYear').val();
+        // ja current address
+        if ($input.attr('id') == 'JACurrentAddress_AddressStartLivingMonth' || $input.attr('id') == 'JACurrentAddress_AddressStartLivingYear') {
+            return compareAddressDateAgainstDobDate($('#JACurrentAddress_AddressStartLivingMonth').val(), $('#JACurrentAddress_AddressStartLivingYear').val(), dobMonth, dobYear);
+        }
+            // ja previous address
+        else if ($input.attr('id') == 'JAPreviousAddress_AddressStartLivingMonth' || $input.attr('id') == 'JAPreviousAddress_AddressStartLivingYear') {
+            return compareAddressDateAgainstDobDate($('#JAPreviousAddress_AddressStartLivingMonth').val(), $('#JAPreviousAddress_AddressStartLivingYear').val(), dobMonth, dobYear);
+        }
+            // ja earlier address
+        else if ($input.attr('id') == 'JAEarlierPreviousAddress_AddressStartLivingMonth' || $input.attr('id') == 'JAEarlierPreviousAddress_AddressStartLivingYear') {
+            return compareAddressDateAgainstDobDate($('#JAEarlierPreviousAddress_AddressStartLivingMonth').val(), $('#JAEarlierPreviousAddress_AddressStartLivingYear').val(), dobMonth, dobYear);
+        }
+        return true;
+    },
+
+    "monthandyear": function ($input) {
+        var $addressLiving = $input.closest('.address-living');
+        if ($addressLiving.length && $input.val()) {
+            var $monthField, $yearField;
+            var isYearField = $input.data().hasOwnProperty('monthname');
+            if (isYearField) {
+                $monthField = $addressLiving.find("select[id$='" + $input.data('monthname') + "']");
+                $yearField = $input;
+            }
+            else {
+                $monthField = $input;
+                $yearField = $addressLiving.find("select[id$='" + $input.data('yearname') + "']");
+            }
+
+            var currentDate = new Date();
+            var currentYear = currentDate.getFullYear();
+            var monthVal = 0, yearVal = 0;
+
+            try {
+                monthVal = parseInt($monthField.val(), 10);
+            }
+            catch (err) {
+                monthVal = 0;
+            }
+            try {
+                yearVal = parseInt($yearField.val(), 10);
+            }
+            catch (err) {
+                yearVal = 0;
+            };
+
+            var selectedDate = new Date(yearVal, (monthVal - 1));
+            if ((monthVal >= 1 && monthVal <= 12) &&
+                selectedDate <= currentDate && yearVal >= currentYear - 100) {
+                return true;
+            }
+        }
+        return false;
+    },
+
+    "housenameornumbereditdetails": function ($input) {
+        var $addressLookup = $input.closest('.address-details');
+        var isSectionVisible = $addressLookup.is(':visible');
+        if ($addressLookup.length && isSectionVisible) {
+            if (
+                    ($("[name$='BuildingNumber']", $addressLookup).val() === '') &&
+                    ($("[name$='FlatNumber']", $addressLookup).val() === '') &&
+                    ($("[name$='BuildingName']", $addressLookup).val() === '')
+                ) {
+                console.log("Validation failed: housenameornumbereditdetails ");
+                return false;
+            }
+        }
+        console.log("Validation passed: housenameornumbereditdetails ");
+        return true;
+    },
+
+    "housenameornumber": function ($input) {
+
+        var $addressLookup = $input.closest('.address-details');
+        if ($addressLookup.length) {
+            if (
+                    ($("[name$='Address.BuildingNumber']", $addressLookup).val() === '') &&
+                    ($("[name$='Address.FlatNumber']", $addressLookup).val() === '') &&
+                    ($("[name$='Address.BuildingName']", $addressLookup).val() === '')
+                ) {
+                return false;
+            }
+        }
+        return true;
+    },
+    "housenameornumberapply": function ($input) {
+        var $addressLookup = $input.closest('.address-details');
+        if ($addressLookup.length) {
+            if (
+                    ($("[name$='AddressHouseNumber']", $addressLookup).val() === '') &&
+                    ($("[name$='AddressFlatNumber']", $addressLookup).val() === '') &&
+                    ($("[name$='AddressHouseName']", $addressLookup).val() === '')
+                ) {
+                return false;
+            }
+        }
+        return true;
+    },
+    "phone-number": function ($input) {
+        var $strippedNumber = $input.val().replace(/ /g, '');
+        if ($strippedNumber.length > $input.data('max-length')) {
+            return false;
+        }
+        return true;
+    },
+
+
+    "mobile-number": function ($input) {
+        var $number = $input.val() || "";
+        $number = $number.replace("(", "").replace(")", "").replace("-", "").replace(" ", "");
+        if ($number.length === 0 ||
+            ($number[0] == '+' && $number[1] == '4' && $number[2] == '4' && $number[3] == '7') ||
+            ($number[0] == '0' && $number[1] == '7') ||
+            ($number[0] == '+' && $number[1] == '4' && $number[2] == '4' && $number[3] == '0' && $number[4] == '7')
+            ) {
+            return true;
+        }
+        return false;
+    },
+    //**********
+    "usernamealreadyexist": function ($input) {
+        var usernameValueFromSession = $.session.get('username');
+        $.session.remove('username');
+        if (usernameValueFromSession == undefined) {
+            return true;
+        }
+        return false; // shows validation error
+    },
+    //**********
+
+    //**********
+    "accountnumberandsortcode": function ($input) {
+        var accountNumberFromSession = $.session.get('accountNumber');
+        if (accountNumberFromSession != undefined) {
+            return false;// shows validation error
+        }
+        return true;
+    },
+    //**********
+    "ignorecasecomparepopup": function ($input) {
+        var validMem = $('#MemorableWord').val();
+        var validConfirmMem = $('#ConfirmMemorableWord').val();
+        if (validMem == "" || validConfirmMem == "") {
+            return true;
+        }
+        return validMem.toLowerCase() == validConfirmMem.toLowerCase();
+    },
+
+    "requiredifproducttype": function ($input) {
+        var doCheck, thisProductCode;
+        if ($('#ProductCode').length) {
+            thisProductCode = $('#ProductCode').val();
+            doCheck = thisProductCode == $input.data('producttype');
+            if (!doCheck) { //TODO Remove this HACK by using a product code array
+                if ($input.data('producttype') === "RateSaver") {
+
+                    var validateFixedRateCashIsa = false;
+                    var isFixedRateCashIsa = (thisProductCode === '3211') || (thisProductCode === '3212') || (thisProductCode === '3213') || (thisProductCode === '3214') || (thisProductCode === '3215');
+                    if (isFixedRateCashIsa) {
+                        validateFixedRateCashIsa = $("input[type='radio'][name='IsInterestPaidIntoFixedRateIsa']:checked").val() == "False";
+                    }
+
+                    if ((thisProductCode === '3200')
+                        || (thisProductCode === '3201')
+                        || (thisProductCode === '3202')
+                        || (thisProductCode === '3203')
+                        || (thisProductCode === '3204')
+                        || (thisProductCode === '3205')
+                        || validateFixedRateCashIsa
+                        ) {
+                        doCheck = true;
+                    }
+                }
+            }
+            if (doCheck && $input.length && $input.val() === '') {
+                return false;
+            }
+        }
+        return true;
+    },
+
+    "requiredifexistingcustomerwithdetails": function ($input) {
+        if ($('.additonaljadetails-existingcustomer-select select') !== undefined) {
+            var jaExistingCustomerOptionSelected = $('.additonaljadetails-existingcustomer-select select')[0]; //#JAExistingCustomerOptionSelected
+            var isExistingCustomerIndexSelected = (jaExistingCustomerOptionSelected.selectedIndex - 1) == 1;
+            if (isExistingCustomerIndexSelected) {
+                if ($input.length && $input.val() === '') {
+                    return false;
+                }
+            }
+        }
+        return true;
+    },
+
+    "requiredifjointapp": function ($input) {
+        if (($('#JointApplicant').length && $('#JointApplicant').val().match(/true/i) !== null) ||
+            ($('#IsJointApplication:checked').length && $('#IsJointApplication:checked').val().match(/true/i) !== null) ||
+            $('#IsJointApplicant:checked').length) {
+            if ($input.length && $input.val() === '') {
+                return false;
+            }
+        }
+        return true;
+    },
+
+    //*** validation colleague number ***
+    "requiredifcolleague": function ($input) {
+        var howDidYouHear = $('#HowDidYouHearAboutUs').val();
+        var colleagueNumber = $('#ColleagueNumber').val();
+
+        if (howDidYouHear == "I'm a J Sainsbury's colleague") {
+            if (colleagueNumber == "") {
+                return false;
+            }
+        }
+        return true;
+    },
+
+    "requiredtaxresident": function ($input) {
+        var product = $('#AcctTypeVal').val().toLowerCase();
+        if (product == "isa")
+        { return true; }
+        else
+        {
+            var TaxResident = document.querySelector('input[name="TaxResident"]:checked').value;
+            var TaxExternal = document.querySelector('input[name="TaxExternal"]:checked').value;
+            if (TaxExternal == "False" & TaxResident == "False") {
+                return false;
+            }
+        }
+        return true;
+    },
+
+    "requiredjataxresident": function ($input) {
+
+        var product = $('#AcctTypeVal').val().toLowerCase();
+        if (product == "isa")
+        { return true; }
+        else
+        {
+            var TaxResident = document.querySelector('input[name="JATaxResident"]:checked').value;
+            var TaxExternal = document.querySelector('input[name="JATaxExternal"]:checked').value;
+            if (TaxExternal == "False" & TaxResident == "False") {
+                return false;
+            }
+        }
+        return true;
+    },
+
+    //*** validation for title and gender ***
+    "titleagainstgender": function ($input) {
+        var valueOfTitleDropdown = $("#Applicants_0__Title").val();
+        var valueOfGenderDropdown = $("#Applicants_0__Gender option:selected").val();
+
+        var maleTitles = ["Mr", "Father", "Sir", "Professor", "Lord", "Reverend", "Captain", "Sergeant", "Master", "Doctor"];
+        var femaleTitles = ["Mrs", "Miss", "Ms", "Lady", "Professor", "Reverend", "Captain", "Sergeant", "Doctor"];
+
+        if (valueOfTitleDropdown != "") {
+            if (valueOfGenderDropdown == "Male") {
+                if (jQuery.inArray(valueOfTitleDropdown, maleTitles) == -1) {
+                    return false;
+                }
+            }
+            if (valueOfGenderDropdown == "Female") {
+                if (jQuery.inArray(valueOfTitleDropdown, femaleTitles) == -1) {
+                    return false;
+                }
+            }
+        }
+        return true;
+    },
+    //*** validation for title and gender JA ***
+    "titleagainstgenderja": function ($input) {
+        var valueOfTitleDropdown = $('#JATitle').val();
+        var valueOfGenderDropdown = $('#JAGender').val();
+
+        var maleTitles = ["Mr", "Father", "Sir", "Professor", "Lord", "Reverend", "Captain", "Sergeant", "Master", "Doctor"];
+        var femaleTitles = ["Mrs", "Miss", "Ms", "Lady", "Professor", "Reverend", "Captain", "Sergeant", "Doctor"];
+
+        if (valueOfTitleDropdown != "") {
+            if (valueOfGenderDropdown == "Male") {
+                if (jQuery.inArray(valueOfTitleDropdown, maleTitles) == -1) {
+                    return false;
+                }
+            }
+            if (valueOfGenderDropdown == "Female") {
+                if (jQuery.inArray(valueOfTitleDropdown, femaleTitles) == -1) {
+                    return false;
+                }
+            }
+        }
+        return true;
+    },
+
+    //*** validation of current time at address against the previous one: making sure the previous one is earlier than the current one   ***
+    //****  Current vs previous for CURRENT APPLICANT **************************************************************************************
+    "timeataddresscurrentagainstprevious": function ($input) {
+
+        var currentAddressMonth = $('#CurrentAddress_AddressStartLivingMonth').val();
+        var currentAddressYear = $('#CurrentAddress_AddressStartLivingYear').val();
+        var previousAddressMonth = $('#PreviousAddress_AddressStartLivingMonth').val();
+        var previousAddressYear = $('#PreviousAddress_AddressStartLivingYear').val();
+
+        if (currentAddressMonth != "" && currentAddressYear != "") {
+            // Check for furture date
+            if (checkFutureDate(currentAddressYear, currentAddressMonth)) {
+                return false;
+            }
+            if (previousAddressMonth != "" && previousAddressYear != "") {
+
+                if (checkFutureDate(previousAddressYear, previousAddressMonth)) {
+                    return false;
+                }
+
+                if (currentAddressYear - previousAddressYear < 0) {
+                    return false;
+                }
+                else {
+                    if (currentAddressYear - previousAddressYear == 0) {
+                        if (currentAddressMonth - previousAddressMonth <= 0) {
+                            return false;
+                        }
+                    }
+                }
+            }
+
+        }
+        return true;
+
+    },
+
+    //*** validation of current time at address against the previous one: making sure the previous one is earlier than the current one   ***
+    //****  Previous vs Earlier for --> CURRENT APPLICANT **************************************************************************************
+    "timeataddresspreviousagainstearlier": function ($input) {
+        var previousAddressMonth2 = $('#PreviousAddress_AddressStartLivingMonth').val();
+        var previousAddressYear2 = $('#PreviousAddress_AddressStartLivingYear').val();
+        var earlierAddressMonth = $('#EarlierPreviousAddress_AddressStartLivingMonth').val();
+        var earlierAddressYear = $('#EarlierPreviousAddress_AddressStartLivingYear').val();
+
+        if (previousAddressMonth2 != "" && previousAddressYear2 != "") {
+            // Check for furture date
+            if (checkFutureDate(previousAddressYear2, previousAddressMonth2)) {
+                return false;
+            }
+
+            if (earlierAddressMonth != "" && earlierAddressYear != "") {
+
+                if (checkFutureDate(earlierAddressYear, earlierAddressMonth)) {
+                    return false;
+                }
+
+                if (previousAddressYear2 - earlierAddressYear < 0) {
+                    return false;
+                }
+                else {
+                    if (previousAddressYear2 - earlierAddressYear == 0) {
+                        if (previousAddressMonth2 - earlierAddressMonth <= 0) {
+                            return false;
+                        }
+                    }
+                }
+            }
+
+        }
+        return true;
+    },
+
+    //*** validation of current time at address against the previous one: making sure the previous one is earlier than the current one   ***
+    //****  Current vs previous for JOINT APPLICANT APPLICANT **************************************************************************************
+    "timeataddresscurrentagainstpreviousja": function ($input) {
+        var currentAddressMonthJa = $('#JACurrentAddress_AddressStartLivingMonth').val();
+        var currentAddressYearJa = $('#JACurrentAddress_AddressStartLivingYear').val();
+        var previousAddressMonthJa = $('#JAPreviousAddress_AddressStartLivingMonth').val();
+        var previousAddressYearJa = $('#JAPreviousAddress_AddressStartLivingYear').val();
+
+        if (currentAddressMonthJa != "" && currentAddressYearJa != "") {
+            // Check for furture date
+            if (checkFutureDate(currentAddressYearJa, currentAddressMonthJa)) {
+                return false;
+            }
+
+            if (previousAddressMonthJa != "" && previousAddressYearJa != "") {
+
+                if (checkFutureDate(previousAddressYearJa, previousAddressMonthJa)) {
+                    return false;
+                }
+
+                if (currentAddressYearJa - previousAddressYearJa < 0) {
+                    return false;
+                }
+                else {
+                    if (currentAddressYearJa - previousAddressYearJa == 0) {
+                        if (currentAddressMonthJa - previousAddressMonthJa <= 0) {
+                            return false;
+                        }
+                    }
+                }
+            }
+
+
+        }
+        return true;
+
+    },
+
+
+    //*** validation of current time at address against the previous one: making sure the previous one is earlier than the current one   ***
+    //****  Previous vs Earlier for --> JOINT APPLICANT APPLICANT **************************************************************************************
+    "timeataddresspreviousagainstearlierja": function ($input) {
+        var previousAddressMonth2Ja = $('#JAPreviousAddress_AddressStartLivingMonth').val();
+        var previousAddressYear2Ja = $('#JAPreviousAddress_AddressStartLivingYear').val();
+        var earlierAddressMonthJa = $('#JAEarlierPreviousAddress_AddressStartLivingMonth').val();
+        var earlierAddressYearJa = $('#JAEarlierPreviousAddress_AddressStartLivingYear').val();
+
+        if (previousAddressMonth2Ja != "" && previousAddressYear2Ja != "") {
+            // Check for furture date
+            if (checkFutureDate(previousAddressYear2Ja, previousAddressMonth2Ja)) {
+                return false;
+            }
+            if (earlierAddressMonthJa != "" && earlierAddressYearJa != "") {
+
+                if (checkFutureDate(earlierAddressYearJa, earlierAddressMonthJa)) {
+                    return false;
+                }
+                if (previousAddressYear2Ja - earlierAddressYearJa < 0) {
+                    return false;
+                }
+                else {
+                    if (previousAddressYear2Ja - earlierAddressYearJa == 0) {
+                        if (previousAddressMonth2Ja - earlierAddressMonthJa <= 0) {
+                            return false;
+                        }
+                    }
+                }
+            }
+        }
+        return true;
+
+    },
+
+    "sufficient-funds-exist": function ($input) {
+        var $strippedAmount = $input.val().replace(/ /g, '');
+        var sourceBalance = $("#Source").find("option:selected").attr("data-balance");
+        if (sourceBalance == undefined) {
+            return false;
+        }
+        var $strippedSourceAccountAmount = sourceBalance.replace(/ /g, '');
+
+        if (!$.isNumeric($strippedSourceAccountAmount)) {
+            return false;
+        }
+        if (parseFloat($strippedAmount) > parseFloat($strippedSourceAccountAmount)) {
+            return false;
+        }
+        return true;
+    },
+
+    "sufficient-funds-exist-edit-payment": function ($input) {
+        var $strippedAmount = $input.val().replace(/ /g, '');
+        var sourceBalance = $("#availableBal").val();
+        if (sourceBalance == undefined) {
+            return false;
+        }
+        var $strippedSourceAccountAmount = sourceBalance.replace(/ /g, '');
+        if (!$.isNumeric($strippedSourceAccountAmount)) {
+            return false;
+        }
+        if (parseFloat($strippedAmount) > parseFloat($strippedSourceAccountAmount)) {
+            return false;
+        }
+        return true;
+    },
+
+    "sufficient-funds-exist-internal-transfer": function ($input) {
+        if ($('#FundsSource').val() == "Transfer from Sainsbury’s Bank account") {
+            var $strippedAmount = $input.val().replace(/ /g, '');
+            var sourceBalance = $("#SourceToken").find("option:selected").attr("data-balance");
+            if (sourceBalance == undefined) {
+                return false;
+            }
+            var $strippedSourceAccountAmount = sourceBalance.replace(/ /g, '');
+            if (!$.isNumeric($strippedSourceAccountAmount)) {
+                return true;
+            }
+            if (parseFloat($strippedAmount) > parseFloat($strippedSourceAccountAmount)) {
+                return false;
+            }
+        }
+        return true;
+    },
+
+    "multiple-fifty-check": function ($input) {
+        var str = $input.val();
+        if (str != 0 && str % 50 == 0)
+            return true;
+        else
+            return false;
+    },
+
+    "Payment-Amount-Zero-Check": function ($input) {
+        var $strippedAmount = $input.val().replace(/ /g, '');
+        if ($strippedAmount <= 0) {
+            return false;
+        }
+        return true;
+    },
+
+    "requiredbanktime": function () {
+
+        var currentbankyears = $('#CurrentBankYears').val();
+        var currentbankmonths = $('#CurrentBankMonths').val();
+
+        if (currentbankyears == "" || currentbankmonths == "") {
+            return false;
+        }
+
+        if (currentbankyears == "0" && currentbankmonths == "0") {
+            return false;
+        }
+
+        return true;
+
+    },
+
+    "timeataddresscurrentagainstdateofbirthach": function ($input) {
+        var addressMonth = $('#AchCurrentAddress_AddressStartLivingMonth').val();
+        var addressYear = $('#AchCurrentAddress_AddressStartLivingYear').val();
+        var dobMonth = $('#AchDateOfBirthMonth').val();
+        var dobYear = $('#AchDateOfBirthYear').val();
+
+        return compareAddressDateAgainstDobDate(addressMonth, addressYear, dobMonth, dobYear);
+    },
+
+    "timeataddresspreviousagainstdateofbirthach": function ($input) {
+        var addressMonth = $('#AchPreviousAddress_AddressStartLivingMonth').val();
+        var addressYear = $('#AchPreviousAddress_AddressStartLivingYear').val();
+        var dobMonth = $('#AchDateOfBirthMonth').val();
+        var dobYear = $('#AchDateOfBirthYear').val();
+
+        return compareAddressDateAgainstDobDate(addressMonth, addressYear, dobMonth, dobYear);
+    },
+
+    "timeataddresscurrentagainstpreviousach": function ($input) {
+        var achCurrentAddressMonth = $('#AchCurrentAddress_AddressStartLivingMonth').val();
+        var achCurrentAddressYear = $('#AchCurrentAddress_AddressStartLivingYear').val();
+        var achPreviousAddressMonth = $('#AchPreviousAddress_AddressStartLivingMonth').val();
+        var achPreviousAddressYear = $('#AchPreviousAddress_AddressStartLivingYear').val();
+
+        if (achCurrentAddressMonth != "" && achCurrentAddressYear != "") {
+            // Check for furture date
+            if (checkFutureDate(achCurrentAddressYear, achCurrentAddressMonth)) {
+                return false;
+            }
+
+            if (achPreviousAddressMonth != "" && achPreviousAddressYear != "") {
+
+                if (checkFutureDate(achPreviousAddressYear, achPreviousAddressMonth)) {
+                    return false;
+                }
+
+                if (achCurrentAddressYear - achPreviousAddressYear < 0) {
+                    return false;
+                }
+                else {
+                    if (achCurrentAddressYear - achPreviousAddressYear == 0) {
+                        if (achCurrentAddressMonth - achPreviousAddressMonth <= 0) {
+                            return false;
+                        }
+                    }
+                }
+            }
+        }
+        return true;
+    },
+
+    "dynamic-range": function ($input) {
+        var currentValue = parseFloat($input.val());
+        var minPropertyFieldName = $input.data("min-property");
+        var maxPropertyFieldName = $input.data("max-property");
+        var minValue = parseFloat($('form').find('input[name="' + minPropertyFieldName + '"]').val());
+        var maxValue = parseFloat($('form').find('input[name="' + maxPropertyFieldName + '"]').val());
+
+        var message = $input.data("dynamic-range-message");
+        $input.data("dynamic-range-message", message.replace("MIN_VALUE", minValue).replace("MAX_VALUE", maxValue));
+
+        if (isNaN(currentValue))
+        {
+            return true;
+        }
+        else
+        {
+            return currentValue >= minValue && currentValue <= maxValue;
+        }
+    },
+    "isdatewithinthepastsixmonths": function ($input) {
+        var d1 = new Date();
+        d1.setMonth(d1.getMonth() - 6);
+
+        var fromDayValue = $('#FromDay').val();
+        var fromMonthValue = $('#FromMonth').val();
+        var fromYearValue = $('#FromYear').val();
+        var d2 = new Date(fromYearValue, fromMonthValue, fromDayValue);
+
+        if (d2 >= d1)
+            return true;
+        return false;
+    },
+
+    "uk-postcode": function ($input) {
+        var target = document.activeElement;
+        if ($input != null && $input[0] != null && target != null) {
+            if ($input[0].id !== target.id || $input[0].name !== target.name) {
+                var pattern = "^(GIR {0,2}0AA)|(((A[BL]|B[ABFDHLNRSTX]?|C[ABFHMORTVW]|D[ADEGHLNTY]|E[HNX]?|F[KY]|G[LUY]?|H[ADGPRSUX]|I[GMPV]|JE|K[ATWY]|L[ADELNSU]?|M[EKL]?|N[EGNPRW]?|O[LX]|P[AEHLOR]|R[GHM]|S[AEGKLMNOPRSTY]?|T[ADFNQRSW]|UB|W[ADFNRSV]|YO|ZE)[1-9]?[0-9]|((E|N|NW|SE|SW|W)1|EC[1-4]|WC[12])[A-HJKMNPR-Y]|(SW|W)([2-9]|[1-9][0-9])|EC[1-9][0-9]) {0,2}[0-9][ABD-HJLNP-UW-Z]{2})$";
+                var regEx = new RegExp(pattern, "i");
+                var postcodeValue = $input.val().toUpperCase();
+                var valid = postcodeValue == "" || $.trim(postcodeValue).match(regEx) != null;
+                if (valid && postcodeValue != "") {
+                    // Additional check for Crown Dependencies
+                    if (postcodeValue.indexOf("GY") === 0 ||
+                        postcodeValue.indexOf("JE") === 0 ||
+                        postcodeValue.indexOf("IM") === 0) {
+                        return false;
+                    }
+                }
+                return valid;
+            }
+        }
+        return true;
+    }
+});
+
+var apply = apply || {};
+
+/**
+ * Namespace all apply form JavaScript
+ */
+apply.validation = (function () {
+    /**
+     * Validates section
+     * @param {section} options The section to validate
+     * @param {object} options The validation options
+     */
+
+
+    var validateSectionBySelector = function (selector, ignoreHidden, options) {
+        var valid = true;
+        if ($(selector).length) {
+            $(selector).find('[data-validate]').each(function () { //iterate through each required field and validate input
+                if (!$(this).is(':hidden') || !ignoreHidden) {
+                   
+                    valid &= validateField($(this), options);
+                }
+            });
+        }
+        // explicitly return true/false
+        if (valid) {
+            return true;
+        }
+        return false;   
+    };
+
+    var validateSection = function (options) {
+        var valid = validateYourDetailsSection(options);
+        if (!valid) {
+            var errorBlocks = $('.form-section-content').find('span.help-block[data-validation-error]'),
+                target = errorBlocks.eq(0),
+                targetOffset = target.offset();
+
+            $('html,body').animate({
+                scrollTop: targetOffset.top - 15
+            }, 1000);
+        }
+        return valid;
+    };
+
+
+    /**
+     * validates Your Details section
+     * @param {object} options The validation options
+     */
+    var validateYourDetailsSection = function (options) {
+        var valid = true; //store valid status
+        var $copyAddressFromMainApplicantElement = $('#JACopyAddressFromMainApplicant');
+        var valueOfCheckBox = $copyAddressFromMainApplicantElement.prop('checked') ? 1 : 0; // Check if the Checkbox for Address same as primary applciant is checked
+
+        $('#yourdetails1').find('[data-validate]').each(function () { //iterate through each required field and validate input
+            if (!$(this).is(':hidden')) {
+                var ignoreValidation = $(this).attr('data-ignore-validation') != undefined;
+                if (!ignoreValidation) {
+                    valid &= validateField($(this), options);
+                } 
+            }
+        });
+        var hasJointApplicant = false;
+        if ($('#IsJointApplication').length > 0) {
+            hasJointApplicant = $('#IsJointApplication').is(':checked');
+        }
+        else if ($('#IsJointApplicant').length > 0) {
+            hasJointApplicant = $('#IsJointApplicant').is(':checked');
+        }
+
+        var hasAdditionalCardHolder = $("input[id='AddAdditionalCardHolder']").length > 0 &&
+            $("input[id='AddAdditionalCardHolder']").prop("checked") ? 1 : 0;
+        valid &= validateAddressSection(options, hasJointApplicant, hasAdditionalCardHolder);
+
+        if ($('#IsJointApplication').length > 0 && !$('#IsJointApplication').is(':checked') && valueOfCheckBox == 0) {
+            valid &= validateAddressSection(options, hasJointApplicant, hasAdditionalCardHolder);
+        }
+        $('#hasAgreed [data-validate]').each(function () { //iterate through all required inputs in this section
+            if ($(this).parentsUntil('.form-section-content')) { //if visible (not within a container that is hidden)
+                valid &= validateField($(this), options); //validate
+            }
+        });
+        $('#hasAgreed2 [data-validate]').each(function () { //iterate through all required inputs in this section
+            if ($(this).parentsUntil('.form-section-content')) { //if visible (not within a container that is hidden)
+                valid &= validateField($(this), options); //validate
+            }
+        });
+        return valid; //return true if no errors, otherwise return false.
+    };
+
+
+    /**
+     * validates address section
+     * @param {object} options The validation options
+     */
+    var validateAddressSection = function (options, hasJointApplicant, hasAdditionalCardholder) {
+        var valid = true;
+
+        if ($("#currentAddress").hasClass('opened')) {
+            valid &= validateCompleteAddress($('#currentAddress'), options);
+            valid &= validateFindAddressClicked($('#currentAddress'), 'CurrentAddress');
+        }
+
+        if ($('#previousAddress').hasClass('opened')) { //if previous address section is active, then validate
+            valid &= validateCompleteAddress($('#previousAddress'), options);
+            valid &= validateFindAddressClicked($('#previousAddress'), 'PreviousAddress');
+        }
+
+        if ($('#earlierPreviousAddress').hasClass('opened')) { //if earlierPreviousAddress address is active, then validate
+            valid &= validateCompleteAddress($('#earlierPreviousAddress'), options);
+            valid &= validateFindAddressClicked($('#earlierPreviousAddress'), 'EarlierPreviousAddress');
+        }
+
+        if (hasJointApplicant) {
+            if ($('#jacurrentAddress').hasClass('opened')) {
+                valid &= validateCompleteAddress($('#jacurrentAddress'), options);
+                valid &= validateFindAddressClicked($('#jacurrentAddress'), 'JACurrentAddress');
+            }
+            if ($('#japreviousAddress').hasClass('opened')) { //if previous address section is active, then validate
+                valid &= validateCompleteAddress($('#japreviousAddress'), options);
+                valid &= validateFindAddressClicked($('#japreviousAddress'), 'JAPreviousAddress');
+            }
+            if ($('#jaearlierPreviousAddress').hasClass('opened')) { //if earlierPreviousAddress address is active, then validate
+                valid &= validateCompleteAddress($('#jaearlierPreviousAddress'), options);
+                valid &= validateFindAddressClicked($('#jaearlierPreviousAddress'), 'JAEarlierPreviousAddress');
+            }
+        }
+
+        if (hasAdditionalCardholder) {
+            if ($('#achCurrentAddress').hasClass('opened')) {
+                valid &= validateCompleteAddress($('#achCurrentAddress'), options);
+                valid &= validateFindAddressClicked($('#achCurrentAddress'), 'AchCurrentAddress');
+            }
+            if ($('#achPreviousAddress').hasClass('opened')) { //if previous address section is active, then validate
+                valid &= validateCompleteAddress($('#achPreviousAddress'), options);
+                valid &= validateFindAddressClicked($('#achPreviousAddress'), 'AchPreviousAddress');
+            }
+        }
+
+        return valid; //return =validation state
+    };
+
+
+    var validateFindAddressClicked = function ($whichAddress, addressSectionId) {
+
+        var valid = true;
+        // Check if postcode of bfpo-code are in current section, don't validate if not present e.g. currentAddress section of loan apply Primary applicant
+        if ($whichAddress.find('.address-postcode').length == 0 && $whichAddress.find('.bfpo-code').length == 0) {
+            return valid;
+        }
+
+        var addressLine1Id = addressSectionId + "_AddressFlatNumber";
+        var addressHomeNumber = addressSectionId + "_AddressHouseNumber";
+        var addressHomeName = addressSectionId + "_AddressHouseName";
+        var addressBFPOId = addressSectionId + "_AddressBFPOLocation2";
+        var postcodeErrorId = addressSectionId + ".AddressPostcode";
+        var bfpocodeErrorId = addressSectionId + ".AddressBFPOCode";
+        var elementBFPOCode = $whichAddress.find('input[name$=AddressBFPOCode]');
+        var elementCode = $whichAddress.find('input[name$=AddressPostcode]');
+
+        if (addressSectionId == "EditDetailsAddress") { //if we are in the EDIT DETAILS section
+            addressLine1Id = "StreetName";
+            addressBFPOId = "AddressBfpoLocation2";
+            postcodeErrorId = "Postcode";
+            bfpocodeErrorId = "AddressBfpoCode";
+            elementBFPOCode = $whichAddress.find('input[name$=AddressBfpoCode]');
+            elementCode = $whichAddress.find('input[name$=Postcode]');
+        }
+
+        if (
+             (elementBFPOCode.length > 0 && document.getElementById(elementBFPOCode.attr('id')).value != null && document.getElementById(elementBFPOCode.attr('id')).value != "")
+             ||
+             (elementCode.length > 0 && document.getElementById(elementCode.attr('id')).value != null && document.getElementById(elementCode.attr('id')).value != ""))
+        {
+        }
+        else
+        {
+            return false;
+        }
+
+        if (apply.events.ISBFPO($whichAddress)) {
+            $bfpoDetails = $whichAddress.find(".bfpo-details");
+            if ($bfpoDetails.length && $bfpoDetails.first().is(":hidden")) {
+                if (document.getElementById(addressBFPOId) != null) {
+
+                    var bfpoError = $whichAddress.find("[{0}=\"{2}\"], [{1}=\"{2}\"]".format("data-validation-error", "data-validation-valid", bfpocodeErrorId));
+                    if (document.getElementById(addressBFPOId).value != null && document.getElementById(addressBFPOId).value != "") {
+                        // remove error
+                        $(bfpoError).attr('data-validation-valid', bfpocodeErrorId); //add new attribute
+                        $(bfpoError).removeAttr("data-validation-error"); //remove attribute
+                        $(bfpoError).attr('style', 'display: none;'); //add new style attribute
+                        elementBFPOCode.removeClass('validation-error-highlight');
+                    } else {
+
+                        $(bfpoError).attr('data-validation-error', elementBFPOCode.attr('name'));
+                        $(bfpoError).removeAttr('data-validation-valid');
+                        $(bfpoError).text('Please click ' + "'" + "find address" + "'" + '.');
+                        $(bfpoError).attr('style', 'display: block;'); //add new style attribute
+                        elementBFPOCode.addClass('validation-error-highlight');
+                        valid = false;
+                    }
+                }
+            }
+
+        } else {
+
+            if (document.getElementById(addressLine1Id) != null) {
+
+                var error = $whichAddress.find("[{0}=\"{2}\"], [{1}=\"{2}\"]".format("data-validation-error", "data-validation-valid", postcodeErrorId));
+
+                var flatNumber = document.getElementById(addressLine1Id).value;
+                var homeNumber = document.getElementById(addressHomeNumber).value;
+                var houseName = document.getElementById(addressHomeName).value;
+               
+                if (flatNumber != null && flatNumber !== "" || homeNumber != null && homeNumber !== "" || houseName != null && houseName !== "")
+                {
+                    // remove error
+                    $(error).attr('data-validation-valid', postcodeErrorId); //add new attribute
+                    $(error).removeAttr("data-validation-error"); //remove attribute
+                    $(error).attr('style', 'display: none;'); //add new style attribute
+                    elementCode.removeClass('validation-error-highlight');
+                    apply.validation.validateField($('#PostCode'), { "highlight": true, "quiet": false });
+                    $whichAddress.find(".address-postcode").find(".validation-icon").attr('style', 'display: block;');
+                }
+                else {
+                    $(error).attr('data-validation-error', elementCode.attr('name'));
+                    $(error).removeAttr('data-validation-valid');
+                    
+                    if (document.baseURI.indexOf("creditcardapplication") > 0) {
+                        $(error).text('Please click ' + "'" + "find address" + "'" + '.');
+                    }
+                    else {
+                        $(error).text('Please click Find address.');
+                    }
+
+                    $(error).attr('style', 'display: block;'); //add new style attribute
+                    elementCode.addClass('validation-error-highlight');
+                    valid = false;
+                }
+            }
+        }
+
+        return valid;
+    }
+
+
+
+    /**
+     * validates optional benefits section
+     * @param {object} options The validation options
+     */
+    var validateBenefitsSection = function (options) {
+        var valid = true;
+
+        $('#benefits [data-validate]').each(function () { //iterate through all required inputs in this section
+            if ($(this).parentsUntil('.form-section-content', '.collapsible, .hide-if-js').not('.opened').length == 0) { //if visible (not within a container that is hidden)
+                valid &= validateField($(this), options); //validate
+            }
+        });
+
+        return valid; //return true if validation string is blank, otherwise return false
+    };
+
+
+    /**
+     * validates Finish section
+     * @param {object} options The validation options
+     */
+    var validateFinishSection = function (options) {
+        var valid = true;
+
+        $('#finish [data-validate]').each(function () { //iterate through all required inputs in this section
+            if ($(this).parentsUntil('.form-section-content', '.collapsible, .hide-if-js').not('.opened').length == 0) { //if visible (not within a container that is hidden)
+                valid &= validateField($(this), options); //validate
+            }
+        });
+
+        return valid; //return true if validation string is blank, otherwise return false
+    };
+
+
+    /**
+     * validates address before lookup
+     * @param {$} $whichAddress The address container the lookup is within (e.g. current address, previous address...)
+     * @param {object} options The validation options
+     */
+    var validateAddressForLookup = function ($whichAddress, options) {
+        var valid = true;
+        if (apply.events.ISBFPO($whichAddress)) {
+            valid &= validateGroup($whichAddress.find('.bfpo-code'), options);
+        } else {
+            valid &= validateGroup($whichAddress.find('.address-postcode'), options);
+            //valid &= validateGroup($whichAddress.find('.address-details'), options);
+        }
+        return valid; //return true if validation string is blank, otherwise return false
+    };
+
+
+    /**
+     * Validates the complete address
+     * @param {$} $whichAddress The address container the lookup is within (e.g. current address, previous address...)
+     * @param {object} options The validation options
+     */
+    var validateCompleteAddress = function ($whichAddress, options) {
+        var valid = true, addressLookup, $addressError;
+        if (!$whichAddress.find('.address-details').hasClass('opened')) { //if address details is not open, then display alert to user if not in quiet validation mode
+            if ($whichAddress.find('.bfpo-address-details').hasClass('opened')) {
+                $whichAddress.find('[data-validate]').each(function () { //validate BFPO fields
+                    if (!$(this).is(':hidden')) { // Only validate if it is displayed
+                        valid &= validateField($(this), options);
+                    }
+                });
+            } else if ($whichAddress.find('.address-details').hasClass('opened')) { // this check is required for main applicant on Loans Application
+                $whichAddress.find('[data-validate*="postcode"]').each(function () { //validate postcode first and display errors if missing
+                    if (!$(this).is(':hidden')) { // Only validate postcode if it is displayed
+                        valid &= validateField($(this), options);
+                    }
+                });
+                if (!options.quiet && !$whichAddress.find('.bfpo-address-details').hasClass('opened')) { //This error should not show for BFPO errors - It may have to change for BFPO look up
+                    apply.uifunctions.showAlert($whichAddress.find('.address-section-error'), 'Please enter either your flat number, house number or house name AND your postcode then use the button below to find your address or <a class="address-supply-manual">fill your address in manually</a>.', false);
+                }
+                valid &= false;
+            }
+        } else {
+            apply.uifunctions.removeAlert($whichAddress.find('.address-section-error'));//if account details is visible then remove any such alert message
+            $whichAddress.find('[data-validate]').each(function () { //validate visible required fields within address
+                if (!$(this).parent().is(':hidden')) {
+                    valid &= validateField($(this), options);
+                }
+            });
+        }
+        return valid; //return true if validation string is blank, otherwise return false
+    };
+
+
+    var validateAchCompleteAddress = function ($whichAddress, options) {
+        var valid = true, addressLookup, $addressError;
+        if (!$whichAddress.find('.address-details').hasClass('opened')) { //if address details is not open, then display alert to user if not in quiet validation mode
+            if ($whichAddress.find('.bfpo-address-details').hasClass('opened')) {
+                $whichAddress.find('[data-validate]').each(function () { //validate BFPO fields
+                    if (!$(this).is(':hidden')) { // Only validate if it is displayed
+                        valid &= validateField($(this), options);
+                    }
+                });
+            } else {
+                $whichAddress.find('[data-validate*="postcode"]').each(function () { //validate postcode first and display errors if missing
+                    if (!$(this).is(':hidden')) { // Only validate postcode if it is displayed
+                        valid &= validateField($(this), options);
+                    }
+                });
+                valid &= false;
+            }
+        } else {
+            apply.uifunctions.removeAlert($whichAddress.find('.address-section-error'));//if account details is visible then remove any such alert message
+            $whichAddress.find('[data-validate]').each(function () { //validate visible required fields within address
+                if (!$(this).parent().is(':hidden')) {
+                    valid &= validateField($(this), options);
+                }
+            });
+        }
+        return valid; //return true if validation string is blank, otherwise return false
+    };
+
+    /**
+     * Validates a group of fields
+     @param {$} $container The fields to validate
+     @param {object} options The validation options
+    */
+    var validateGroup = function ($container, options) {
+        var valid = true;
+        $container.find('[data-validate]').each(function () {
+            if (!validateField($(this), options)) {
+                valid = false;
+            }
+        });
+        return valid;
+    };
+
+
+    /**
+     * Validates the field
+     @param {$} $field The field to validate
+     @param {object} options The validation options
+    */
+    var validateField = function ($field, options) {
+        if (options === "undefined" || options === undefined || options === null) {
+            options = {};
+        }
+        var valid = ($field.validateInput(options) == ''); //check if input is valid
+        if (!options.quiet && !options.removeOnly) { //if non quiet validation
+            var isInputGroup = $field.parent().hasClass("input-group") || $field.parent().hasClass("input-group-x");
+            if (isInputGroup) {
+                $field.parent().nextAll('.help-block').first().show();
+            }
+            else {
+                if ($field.nextAll('.help-block').length > 0) {
+                    $field.nextAll('.help-block').first().show();
+                }
+                else {
+                    $field.closest(".form-row").find(".help-block").first().show();
+                }
+            }
+
+            if (valid) {
+                //handle valid scenario
+                if ($field.siblings("span.validation-icon[data-validation-valid]").length > 0) {
+                    $field.siblings("span.validation-icon[data-validation-valid]").show();
+                } else {
+                    $field.closest(".form-row").find("span.validation-icon[data-validation-valid]").show();
+                }
+            } else {
+                if (isInputGroup) {
+                    if ($field.parent().closest('span').next('.help-block').length) {
+                        $field.parent().closest('span').next('.help-block').first().show();
+                    }
+                }
+                else {
+                    if ($field.closest('span').next('.help-block').length) {
+                        $field.closest('span').next('.help-block').first().show();
+                    }
+                    if ($field.siblings("span.validation-icon[data-validation-error]").length) {
+                        $field.siblings("span.validation-icon[data-validation-error]").show();
+                    }
+                    $field.closest('.form-row').find("span.validation-icon[data-validation-error]").show();
+                }
+
+                if ($('#AddressSubType').val() != undefined) { // this exist only in the Edit Details section
+                    var iconIdName = $field.prop("id") + "_span1";
+                    $('#' + iconIdName).attr('style', 'display: block;');//display the icon
+                }
+            }
+        }
+        return valid;
+    };
+
+    /**
+ * Validates the field
+ @param {$} $field The field to validate
+ @param {object} options The validation options
+*/
+    var validatePaymentDateField = function ($field, options) {
+        if (options === "undefined" || options === undefined || options === null) {
+            options = {};
+        }
+        var valid = ($field.validateInput(options) == ''); //check if input is valid
+        if (!options.quiet && !options.removeOnly) { //if non quiet validation
+            $field.nextAll('.help-block').first().show();
+            if (valid) {
+                //handle valid scenario
+                $field.siblings("span.validation-icon").removeAttr("data-validation-error");
+                $field.siblings("span.validation-icon").attr("data-validation-valid", "date");
+                $field.siblings("span.validation-icon[data-validation-valid]").show();
+            } else {
+                //handle invalid scenario
+                $field.siblings("span").addClass("help-block help-block-error");
+                $field.siblings("span.validation-icon").removeAttr("data-validation-valid");
+                $field.siblings("span.validation-icon").attr("data-validation-error", "date");
+                $field.siblings("span.validation-icon[data-validation-error]").show();
+            }
+        }
+        return valid;
+    };
+
+
+    var validateMemorable = function () {
+        var validMem = $('#MemorableWord').val();
+        var validConfirmMem = $('#ConfirmMemorableWord').val();
+        return validMem.toLowerCase() == validConfirmMem.toLowerCase();
+    };
+
+    //var validateCardExpiryDate = function() {
+    //    var 
+    //};
+
+
+    return { //Make appropriate functions public
+        validateSectionBySelector: validateSectionBySelector,
+        validateSection: validateSection,
+        validateYourDetailsSection: validateYourDetailsSection,
+        validateFindAddressClicked: validateFindAddressClicked,
+        validateBenefitsSection: validateBenefitsSection,
+        validateFinishSection: validateFinishSection,
+        validateAddressForLookup: validateAddressForLookup,
+        validateField: validateField,
+        validateAddressSection: validateAddressSection,
+        validateCompleteAddress: validateCompleteAddress,
+        validateAchCompleteAddress: validateAchCompleteAddress,
+        validateGroup: validateGroup,
+        validateMemorable: validateMemorable,
+        validatePaymentDateField: validatePaymentDateField
+
+    };
+
+
+
+})();
+
+
+///To check distinct nos in an array
+function onlyUnique(value, index, self) {
+    return self.indexOf(value) === index;
+}
+
+function endsWith(str, suffix) {
+    return str.indexOf(suffix, str.length - suffix.length) !== -1;
+}
+
+function checkFutureDate(selectedYear, selectedMonth) {
+
+    thisYear = new Date().getFullYear();
+    thisMonth = new Date().getMonth(); // as 0=Jan, 1= Feb Need to add +1
+    thisMonth = thisMonth + 1;
+
+    if (selectedYear != null && selectedMonth != null) {
+        if (selectedYear > thisYear) {  
+            return true; // I think this condition is never met as the dropdown for year limits the year up to the current year.
+        }
+    if (selectedYear == thisYear) {
+            if (selectedMonth > thisMonth) {
+                return true;
+            }
+        }
+    }
+    return false;
+}
+
+function compareAddressDateAgainstDobDate(addressMonth, addressYear, dobMonth, dobYear) {
+
+    if (addressMonth != "" && addressYear != "" && addressYear != null && addressMonth != null) {
+        // Check for furture date
+        if (checkFutureDate(addressYear, addressMonth)) {
+            return false;
+        }
+        if (dobMonth != "" && dobYear != "") {
+
+            if (checkFutureDate(dobYear, dobMonth)) {
+                return false;
+            }
+
+            if (addressYear - dobYear < 0) {
+                return false;
+            }
+            else {
+                if (addressYear - dobYear == 0) {
+                    if (addressMonth - dobMonth < 0) {
+                        return false;
+                    }
+                }
+            }
+
+
+        }
+    }
+    return true;
+}

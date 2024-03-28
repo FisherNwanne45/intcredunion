@@ -1,0 +1,28 @@
+﻿$(function() {
+    $(".more-info-toggle").click(function () {
+        var moreInfoBlock = $(this).closest(".more-info-block");
+
+        var moreInfoSection = moreInfoBlock.find(".more-info-section");
+        if (!moreInfoSection) {
+            return;
+        }
+        if (moreInfoSection.is(":visible")) {
+            moreInfoSection.slideUp();
+        } else {
+            moreInfoSection.slideDown();
+        }
+
+        var moreInfoToggles = moreInfoBlock.find(".more-info-toggle-div");
+        if (moreInfoToggles.length > 1)
+        {
+            // there are different toggle buttons for opening and closing the expandable section. Toggle between them.
+            moreInfoToggles.each(function () {
+                if ($(this).is(":visible")) {
+                    $(this).addClass("hidden");
+                } else {
+                    $(this).removeClass("hidden");
+                }
+            });
+        }
+    });
+});

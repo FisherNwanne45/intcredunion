@@ -1,0 +1,196 @@
+﻿/**
+* Login Block JavaScript.
+* Login is now done via ajax.
+*/
+da.provide("da.auth.LoginCtrl");
+
+
+da.require("da.services");
+da.require("da.ui.SpinnerWidget");
+
+da.auth.LoginCtrl = function () {
+    var self = this;
+
+    this.eventService = null;
+    da.injector.inject(this);
+
+    this.loginStartedEvent = this.eventService.createEvent("LoginStarted");
+    this.loginFailedEvent = this.eventService.createEvent("LoginFailed");
+
+    //widgets and variables.
+    this._loadingWidget = new da.ui.LoadingWidget(".login-main");
+
+    //clear web chat live engage cookie
+    da.helpers.removeCookie('live-engage');
+
+    //clear welcome last transactions choice cookie
+    da.helpers.removeCookie('lt-trs');
+
+    //clear collasible status cookie
+    da.helpers.removeCookie('isCollapse');
+
+    $.validator.addMethod("memberNum",
+            function (value, element, param) {
+                return /^\s*[0-9]*\s*$/.test(value);
+            }
+    );
+
+    $.validator.addMethod("validatePassword", da.util.validation.validatePassword);
+
+    $("#loginForm").validate({
+        rules: {
+            MemberNumber: {
+                memberNum: true
+            },
+            Password: {
+                validatePassword: true
+            }
+        },
+        errorLabelContainer: "#errorgroup",
+        onkeyup: false // ### Turn off auto validate whilst typing
+    });
+
+    // displaying custom error icons when error occured 
+
+    $("#loginForm input").on("change", function () {
+        $("#loginForm").find($(this)).valid();
+        if ($(this).hasClass("valid")) {
+            $(this).parents().siblings(".right-inner-addon").hide();
+        } else if ($(this).hasClass("error")) {
+            $(this).parents().siblings(".right-inner-addon").show();
+        }
+    });
+
+    $("button").click(function (e) {
+        if ($("#loginForm")[0] !== undefined) {
+            if (!$("#loginForm").valid()) {
+                $("#loginForm input").each(function() {
+                    if ($(this).hasClass("valid")) {
+                        $(this).parents().siblings(".right-inner-addon").hide();
+                    } else if ($(this).hasClass("error")) {
+                        $(this).parents().siblings(".right-inner-addon").show();
+                    }
+                });
+            } else {
+                $("#loginForm input").each(function() {
+                    if ($(this).hasClass("valid")) {
+                        $(this).parents().siblings(".right-inner-addon").hide();
+                    }
+                });
+            }
+        }
+    });
+
+    if ($(".block-login").length > 0) {
+        $(".block-login").parents(".inner-wrap").addClass("login");
+    }
+
+    if ($(".trms-cond").length > 0) {
+        $(".trms-cond").parents(".main").addClass("trms");
+        $(".trms-cond").parents(".inner-wrap").addClass("trmscond");
+    }
+
+    //get the values from the form
+    this.parseForm = function () {
+        return {
+            MemberNumber: $("#MemberNumber").val(),
+            Password: $("#Password").val()
+        };
+    };
+
+    //show the correct error message;
+    this.showError = function (data) {
+        self._loadingWidget.hide();
+        $("form .alert-box span").hide();
+        $("form .alert-box").show();
+        if (da.helpers.isStringNullOrEmpty(data.ErrorCode) || $("form ." + data.ErrorCode).length == 0) {
+            if (data.IsThreatMetrixAnalysisFailed) {
+                $("form .threatmetrix").show();
+            } else {
+                $("form .default").show();
+            }
+        } else {
+            $("form ." + data.ErrorCode).show();
+        }
+    };
+
+    //redirect to the correct page.
+    this.Redirect = function (forceFactor2Registration, openBankingOTPRedirectRequired, openBankingStaffRevokedAuthorisations) {
+        var defaultUrl = $("#DefaultUrl").val();
+        var factor2Url = $("#Factor2Url").val();
+        var otpUrl = $("#OtpUrl").val();
+        var deniedUrl = $("#DeniedUrl").val();
+        var returnurl = unescape(da.helpers.queryParam("ReturnUrl"));
+
+        if (forceFactor2Registration && !da.helpers.isStringNullOrEmpty(factor2Url)) {
+            location.href = factor2Url;
+        }
+        else if (openBankingStaffRevokedAuthorisations && openBankingStaffRevokedAuthorisations != "" && !da.helpers.isStringNullOrEmpty(deniedUrl)) {
+            location.href = deniedUrl;
+        }
+        else if (openBankingOTPRedirectRequired && !da.helpers.isStringNullOrEmpty(otpUrl)) {
+            location.href = otpUrl;
+        } else if (da.helpers.isStringNullOrEmpty(returnurl) || returnurl == "undefined") {
+            location.href = defaultUrl;
+        } else {
+            location.href = returnurl;
+        }
+    };
+
+    this.showLoading = function () {
+        this._loadingWidget.show();
+        $(".login-heading").hide();
+    };
+
+    this.showSuccess = function() {       
+        self._loadingWidget.hide();
+        $(".login-main").hide();
+        $(".login-success").show();
+    };
+
+    this.clearLoginFields = function() {
+        $("#MemberNumber").val('');
+        $("#Password").val('');
+    }
+
+    $("#loginForm").submit(function (e) {
+        if ($(this).valid()) {
+            e.preventDefault();
+
+            var auth = self.parseForm();
+
+            if (typeof IaDfp !== "undefined") {
+                auth.Fingerprint = IaDfp.readFingerprint();
+            }
+
+            self.loginStartedEvent.publish();
+
+            self.showLoading();
+            $.post("/api/ajaxlogin/login", auth, "json")
+                .done(function (data) {
+                    if (data.Valid && data.Redirect) {
+                        //logged in and no changepassword or terms required.
+                        self.showSuccess();
+                        self.Redirect(data.ForceFactor2Registration, data.OpenBankingOTPRedirectRequired, data.OpenBankingStaffRevokedAuthorisations);
+                    } else if (data.Valid) {
+                        //reload the page for change password, terms or force prompt update.
+                        location.reload();
+                    } else {
+                        self.clearLoginFields();
+                        self.showError(data);
+                        self.loginFailedEvent.publish();
+                    }
+                }).fail(function (data) {
+                    self.clearLoginFields();
+                    self.showError(data);
+                    self.loginFailedEvent.publish();
+                });
+        }
+    });
+};
+
+//called when the page is ready. 
+da.onInit(function () {
+    new da.auth.LoginCtrl();
+});
+

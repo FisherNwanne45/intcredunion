@@ -1,0 +1,140 @@
+
+
+//Code to redirect login,register and activate links in header
+    //*****************************************************START*****************************************************************
+    //***************************************************************************************************************************
+
+function loadActionLinks(sbOutages,sbOutagesUrl){
+
+// document.getElementById("logo").onclick = newDoc();
+//var aTags = document.getElementsByTagName("a");
+ var list = document.getElementsByClassName("online-banking");
+var aTags = (list !== undefined && list.length > 0) ? list[0].getElementsByTagName("a") : [];
+
+for (var i = 0; i < aTags.length; i++) {
+
+     if(window.location.href.indexOf("www.sainsburysbank.co.uk/login") > -1)
+                {
+                            if(aTags[i].className!="cta" && aTags[i].className!="cta cta-secondary")
+                            {
+                                    if (aTags[i].innerText == "Activate") {
+                                      aTags[i].href="https://online.sainsburysbank.co.uk/servicing/signin";
+                                    }
+                                    if (aTags[i].innerText == "Register") {
+                                      aTags[i].href="https://online.sainsburysbank.co.uk/servicing/register";
+                                    }
+
+                                    if (aTags[i].innerText == "Log in") {
+                                      aTags[i].href="https://online.sainsburysbank.co.uk/servicing/signin";
+                                    }
+
+                            }
+                }
+
+      else
+                {
+
+                                    if (aTags[i].innerText == "Activate") {
+                                      aTags[i].href="https://online.sainsburysbank.co.uk/servicing/signin";
+                                    }
+                                    if (aTags[i].innerText == "Register") {
+                                      aTags[i].href="https://online.sainsburysbank.co.uk/servicing/register";
+                                    }
+
+                                    if (aTags[i].innerText == "Log in") {
+                                      if(aTags[i].className!=""){
+                                      aTags[i].href="https://online.sainsburysbank.co.uk/servicing/signin";
+                                    }
+                                  }
+                }
+
+}
+
+
+// var sbOutages=0;
+// var sbOutagesUrl="https://www.sainsburysbank.co.uk/outage";
+if(sbOutages==1){
+
+                for (var i = 0; i < aTags.length; i++) {
+                  if (aTags[i].href.indexOf("https://online.sainsburysbank.co.uk")>=0 ||
+                       aTags[i].href.indexOf("https://online.sainsburysbank.co.uk")>=0 ||
+                       aTags[i].href.indexOf("/onlinesupport/welcome-register")>=0 ||
+                       aTags[i].href.indexOf("/onlinesupport/welcome-activate")>=0 ||
+                       aTags[i].href.indexOf("/onlinesupport/welcome-login")>=0 ) {
+
+                   aTags[i].href = sbOutagesUrl;
+                 }
+               }
+             }
+
+}
+
+
+//*****************************************************END*****************************************************************
+//*************************************************************************************************************************
+
+
+// Sainsbury's Bank external functions js file --  -- Last edited: 23/09/16
+
+// outages function
+function sb_outages(status,url) {
+    // var status,url;
+    // if(status===1) {
+    //     $$("#support-tools a").each(function(link){link.href = url;});
+    //     $$("#content-header a").each(function(link){if(link.href.indexOf("https://online.sainsburysbank.co.uk")>=0){link.href = url;}});
+    //     $$("#content a").each(function(link){if(link.href.indexOf("https://online.sainsburysbank.co.uk")>=0){link.href = url;}});
+    //     $$("#content a").each(function(link){if(link.href.indexOf("/onlinesupport/welcome-register")>=0){link.href = url;}});
+    //     $$("#content a").each(function(link){if(link.href.indexOf("/onlinesupport/welcome-activate")>=0){link.href = url;}});
+    //     $$("#content a").each(function(link){if(link.href.indexOf("/onlinesupport/welcome-login")>=0){link.href = url;}});
+    // };
+};
+
+// video checker and cookie set
+function demoVideoJS(){
+  	if (document.cookie.replace(/(?:(?:^|.*;\s*)demoVideoShown\s*\=\s*([^;]*).*$)|^.*$/, "$1") == "true") {
+    	$$("#support-tools a").each(function(link){if(link.href.indexOf("/onlinesupport/welcome-register")>=0){link.href = "https://online.sainsburysbank.co.uk/servicing/register";}});
+    	$$("#support-tools a").each(function(link){if(link.href.indexOf("/onlinesupport/welcome-activate")>=0){link.href = "https://online.sainsburysbank.co.uk/servicing/signin";}});
+    	$$("#support-tools a").each(function(link){if(link.href.indexOf("/onlinesupport/welcome-login")>=0){link.href = "https://online.sainsburysbank.co.uk/servicing/signin";}});
+    	$$("#content a").each(function(link){if(link.href.indexOf("/onlinesupport/welcome-register")>=0){link.href = "https://online.sainsburysbank.co.uk/servicing/register";}});
+    	$$("#content a").each(function(link){if(link.href.indexOf("/onlinesupport/welcome-activate")>=0){link.href = "https://online.sainsburysbank.co.uk/servicing/signin";}});
+    	$$("#content a").each(function(link){if(link.href.indexOf("/onlinesupport/welcome-login")>=0){link.href = "https://online.sainsburysbank.co.uk/servicing/signin";}});
+  	}
+  	else {
+  		var a = window.location.href;
+    	if(a.indexOf("/onlinesupport/welcome-login")>=0 || a.indexOf("/onlinesupport/welcome-activate")>=0 || a.indexOf("/onlinesupport/welcome-register")>=0){
+      		var d = new Date();
+			d.setTime(d.getTime() + (30*24*60*60*1000));
+			var expires = "expires=" + d.toGMTString();
+			document.cookie = "demoVideoShown=true; "+expires+";path=/;";
+    	}
+  	}
+}
+
+// popunder function
+function refreshParent(url){
+    setTimeout(function(){document.location.href = url},500);
+}
+
+// css for input textbox
+  function ChangeCSS(obj, event)
+    {
+        if(event.type=="focus")
+        {
+            obj.style.borderColor = "blue";
+        obj.style.backgroundColor = "#f6f6f6";
+        }
+        else if(event.type=="blur")
+            {  obj.style.borderColor = "#707070";
+            obj.style.backgroundColor = "white";
+            }
+
+
+}
+
+function PopUpThankYouYouChoose(popURL) {
+  
+  var newWindow = open (popURL,'_blank','width='+screen.width+',height='+screen.height+',location=0,status=0,toolbar=0,menubar=0,scrollbars=1,resizable=1', left=window.screenX+0);
+  //document.location.href=thankURL;
+  newWindow.focus ();
+}
+

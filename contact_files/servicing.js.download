@@ -1,0 +1,94 @@
+﻿$(document).ready(function () { //On main document ready event
+
+    apply.uifunctions.initialiseCustomElements();
+
+    apply.events.securityDetailsCredentialsTypeComboclick(); // Stop java exception
+    apply.events.submitButtonclick();
+    apply.events.editDetailsSaveButtonclick();
+    apply.events.orderpayinslipclick();
+    apply.events.editaccountinterestpaidtoclick();
+    apply.events.accounttopaytoclick();
+    apply.events.wireInlineValidation();
+    apply.events.validateGroup();
+    apply.events.validateField();
+    apply.events.wireAddressFindButtonClick();
+    apply.events.wireApplicationTypeRadioClick();
+    apply.events.wireAddressChooseComboClick();
+
+    apply.events.wireAmountKeyPress();
+    apply.events.wireOnlyNumbersFieldKeyPress();
+    apply.events.wireDirectDebitTermsAndCondCheckboxClick();
+    apply.events.wireEditAcctInterestPaidToCheckboxClick();
+    
+    apply.events.wireShortApplyWhatTypeOfAcctDropdownChange();
+    apply.events.wireStatementsButtonClick();
+    apply.events.wireEditAcctIntPaidToReviewAndConfirmButtonClick();
+    apply.events.wireEditAcctIntPaidToDropdownChange();
+
+    apply.events.wireJointApplicantSameAddressAsMainClick();
+
+    apply.events.wireJAAccountNumberFocusOut();
+
+    apply.events.wireJACardNumberFocusOut();
+
+    apply.events.wireJALoanAgreementNumberFocusOut();
+
+    apply.events.wireSortCodePart1TextBoxFocusOut();
+    apply.events.wireSortCodePart2TextBoxFocusOut();
+    apply.events.wireSortCodePart3TextBoxFocusOut();
+    
+    apply.events.wireAnnualIncomeBeforeTaxTextBoxFocusOut();
+    apply.events.wirePartnerAnnualIncomeBeforeTaxTextBoxFocusOut();
+
+    apply.events.wireManageDirectDebitCardAmountChange();
+
+    apply.events.wirePayCreditCardAmountChange();
+    apply.events.wirePostcodeTextboxChange();
+    apply.events.wireResetCredButtonClick();
+
+    apply.events.wireTypeAddressManuallyClick();
+    apply.events.wireEnterBFPOAddressClick();
+    apply.events.wireTypeBackAddressClick();
+    apply.events.wireStartLivingThereComboClick();
+
+    apply.uifunctions.clearHyperlinkButtonsNavigation();
+
+    apply.events.wireHowDidYouHearAboutUsComboClick();
+    apply.events.wireTitleComboChange();
+    apply.events.wireColleagueNumberComboChange();
+    apply.events.wireNewMssgTextAreaChange();
+    apply.events.wireNewMssgTextAreaChangeHelpAndFAQ();
+    apply.events.wireAddressStartLivingComboChange();
+    apply.events.wireCurrentMonthComboChange();
+    apply.events.wirePreviousMonthComboChange();
+    apply.events.wireJACurrentMonthComboChange();
+    apply.events.wireJAPreviousMonthComboChange();
+    apply.events.wireJAAccountNumberChange();
+    apply.events.wireJASortCodeChange();
+    apply.events.wirePostcodeChange();
+    apply.events.wireInputChange();
+    apply.events.addRequired();
+    apply.events.BankCheckSubmit();
+    apply.events.wireDirectDebitSetupPage();
+
+    apply.events.paynowclick();
+    apply.events.UserNameCheck();
+    apply.events.SelfCertify();
+    apply.events.SelfCertifyClose();
+    apply.events.wireJointApplicantExistingCutomerComboClick();
+    apply.events.wireJointApplicantAccountTypeComboClick();
+
+    apply.events.wireValidateBFPOCodeOnFocusOutChangeForCurrentAddress();
+    
+    apply.events.wireValidateBFPOCodeOnFocusOutChangeForPreviousAddress();
+    apply.events.wireValidateBFPOCodeOnFocusOutChangeForEarlierPreviousAddress();
+    apply.events.wireValidateBFPOCodeOnFocusOutChangeForJACurrentAddress();
+    apply.events.wireValidateBFPOCodeOnFocusOutChangeForJAPreviousAddresss();
+    apply.events.wireValidateBFPOCodeOnFocusOutChangeForJAEarlierPreviousAddress();
+
+    apply.events.wireAchCopyAddressFromMainApplicantClick();
+    apply.events.wireCreditCardSubmitButtonClick();
+    apply.events.wireGetAQuoteButton();
+    apply.events.wireEditSoftsearchClick();
+    apply.events.wireContinueSoftsearchClick();
+});

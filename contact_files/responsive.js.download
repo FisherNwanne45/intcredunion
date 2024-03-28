@@ -1,0 +1,121 @@
+$(function () {
+
+    APP.Behaviours.mobileSideMenu = function (container) {
+        var defaults = {
+            landscapeRatio: .80,
+            portraitRatio: .55
+        },
+            options = APP.Functions.behaviourOptions(container, defaults),
+            mobileMenu = this,
+            $menu = $(container),
+            $wrapper = $('#uber-wrapper'),
+            $trigger = $('.mobile-side-menu-trigger', $wrapper),
+            $sidebar = $('.mobile-sidebar'),
+            $sa = $('.scroll-area', $sidebar);
+
+        mobileMenu.init = function () {
+            $('.mobile-side-menu-trigger', $wrapper).fastClick(function (e) {
+                e.preventDefault();
+
+                $(this.getAttribute('href')).toggleClass('opened');
+
+                $('body').css({
+                    overflow: 'hidden'
+                });
+
+                if ($wrapper.offset().left === 0) {
+                    mobileMenu.show();
+                } else {
+                    mobileMenu.hide();
+                    mobileMenu.resize();
+                }
+                return false;
+            });
+
+            mobileMenu.resize();
+            window.onresize = mobileMenu.resize;
+        };
+
+        mobileMenu.resize = function () {
+            if (!$wrapper.hasClass('opened')) {
+                $wrapper.css({
+                    left: 0
+                }, 100);
+                $sidebar.css({
+                    right: 0
+                });
+            } else {
+                $wrapper.css({
+                    left: -mobileMenu.getOffset() + 'px'
+                }, 100);
+                $sidebar.css({
+                    right: mobileMenu.getOffset() + 'px'
+                }, 100);
+            };
+        };
+
+        mobileMenu.show = function () {
+            // prevent scrolling of the hidden content
+            $('body').css({ overflow: 'hidden' });
+
+            $wrapper.animate({
+                left: -mobileMenu.getOffset() + 'px'
+            }, 200, function () {
+                $wrapper.css({
+                    position: 'fixed'
+                });
+            });
+
+
+            $sidebar.animate({
+                right: mobileMenu.getOffset() + 'px'
+            }, 200);
+
+            $wrapper.animate({
+                left: -mobileMenu.getOffset() + 'px'
+            }, 200, function () {
+                $wrapper.css({
+                    position: 'fixed'
+                });
+            });
+
+        };
+
+        mobileMenu.hide = function () {
+            $wrapper.css({
+                position: 'static'
+            });
+            $wrapper.animate({
+                left: 0
+            }, 100, function () {
+                $('body').css({ overflow: 'visible' });
+            });
+
+            $sidebar.animate({
+                right: -30
+            }, 100);
+
+            $wrapper.animate({
+                left: 0
+            }, 100, function () {
+                $('body').css({ overflow: 'visible' });
+            });
+        };
+
+        mobileMenu.getRatio = function () {
+            var currentWidth = $(window).width(),
+                currentHeight = $(window).height();
+            return currentWidth / currentHeight;
+        };
+
+        mobileMenu.getOffset = function () {
+            if (mobileMenu.getRatio() >= 1) {
+                return parseInt($(window).width() * options.portraitRatio);
+            };
+            return parseInt($(window).width() * options.landscapeRatio);
+        };
+
+        mobileMenu.init();
+    };
+
+});

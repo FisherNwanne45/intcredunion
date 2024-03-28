@@ -1,0 +1,190 @@
+// Initialising a master object
+var APP = window.APP || {};
+
+// Set up some objects within the master one, to hold functions and behaviors
+APP.Functions = {};
+APP.Behaviours = {};
+
+// Look through the document (or ajax'd in content if "context" is defined) to look for "data-behavior" attributes.
+// Initialize a new instance of the method if found, passing through the element that had the attribute
+APP.LoadBehaviour = function (context) {
+    if (context === undefined) {
+        context = $(document);
+    }
+
+    context.find("*[data-behaviour]").each(function () {
+        var that = $(this),
+            behaviours = that.attr('data-behaviour');
+
+        $.each(behaviours.split(" "), function (index, behaviourName) {
+            try {
+                var BehaviourClass = APP.Behaviours[behaviourName];
+                if (typeof BehaviourClass !== "undefined") {
+                    var initializedBehaviour = new BehaviourClass(that);
+                }
+            }
+            catch (e) {
+                // No Operation
+            }
+        });
+    });
+};
+
+// Set up and trigger looking for the behaviors on DOM ready
+APP.onReady = function () {
+    // Hiding address bar in mobile devices
+    if (navigator.userAgent.match(/Android/i) || navigator.userAgent.match(/iPhone/i) || navigator.userAgent.match(/iPad/i)) {
+        window.addEventListener("load", function() {
+            // Set a timeout...
+            setTimeout(function() {
+                // Hide the address bar!
+                window.scrollTo(0, 1);
+            }, 0);
+        });
+    };
+
+    APP.Functions.init();
+    APP.LoadBehaviour();
+}
+
+// jQuery document ready shorthand
+$(function () {
+    // Hide the Address Bar within Mobile Web Applications
+    APP.onReady();
+});
+
+// Functions
+APP.Functions.init = function () {
+    $('.btn-back-trigger').click(function (e) {
+        history.back();
+        return false;
+    });
+
+    $(":checkbox").each(function () {
+        if ($(this).prop('checked') == true) {
+            $(this).addClass(" fa icon-check icon-checkbox icon-large");
+        } else {
+            $(this).addClass(" fa icon-check-empty icon-checkbox icon-large");
+        }
+    });
+          
+    $(":checkbox").click(function () {
+        if ($(this).hasClass("icon-check-empty")) {
+            $(this).removeClass("icon-check-empty").addClass("icon-check");
+        } else {
+            $(this).removeClass("icon-check").addClass("icon-check-empty");
+        }
+    });
+
+    if ($("#signedBySBY") !== undefined) {
+        $("#signedBySBY").removeClass("icon-check-empty").addClass("icon-check");
+    }
+
+    var equalizeHeights = function () {
+        $('.promo-container .box').filter('.equalize-heights').find('.body').equalizeHeights();
+        if ( $('.landing-page-start-points li .body').length > 1 ) {
+            $('.landing-page-start-points li .body').equalizeHeights();
+        }
+    }
+    equalizeHeights();
+
+    $(window).resize(function () {
+        equalizeHeights();
+    });
+
+    $('.print-trigger').fastClick(function(e){
+        window.print();
+        return false;
+    });
+
+    $('.collapsible-group').on('click', 'a.collapsible', function (e) {
+        $('.collapsible-content', $(e.delegateTarget)).slideToggle();
+        return false;
+    });
+};
+
+APP.Functions.urlVars = function (url) {
+    var vars = {};
+    var parts = url.replace(/[?&]+([^=&]+)=([^&]*)/gi, function (m, key, value) {
+        vars[key] = value;
+    });
+    return vars;
+};
+
+APP.Functions.behaviourOptions = function (element, defaults) {
+    var options = element.data('options');
+
+    if (typeof options === 'undefined' || options == null || options.length === 0) {
+        options = {};
+    } else {
+        options = options.replace(/'/g, "\"");
+        options = $.parseJSON(options);
+    }
+    return $.extend({}, defaults, options);
+};
+
+// Behaviours
+APP.Behaviours.print = function (container) {
+    $(container).fastClick(function(e){
+        window.print();
+        return false;
+    });
+};
+APP.Behaviours.historyBack = function (container) {
+    $(container).on('click', function (e) {
+        window.history.back();
+        return false;
+    });
+};
+APP.Behaviours.slider = function (container, options) {
+
+    var defaults = {
+        sliderInner: container.find('.carousel-slideshow'),
+        slides: container.find('.slide'),
+        sliderTime: 6000
+    };
+
+    var slider = this,
+        carouselPlay;
+
+    slider.settings = {};
+
+    slider.init = function () {
+        slider.settings = $.extend({}, defaults, options);
+        // code goes here
+
+        // pause the carousel slideshow on hover
+        slider.settings.slides.hover(function () {
+            clearInterval(carouselPlay);
+        }, function () {
+            carouselRotateSwitch();
+        });
+
+        carouselRotateSwitch();
+
+        $(window).resize(function () {
+            slider.settings.sliderInner.height(slider.settings.slides.filter('.active').find('img').height() + 'px');
+        });
+
+    };
+
+    var carouselRotate = function () {
+        var ind = $carouselActive.index(slider.settings.slides);
+        slider.settings.slides.removeClass('active');
+        slider.settings.slides.fadeOut();
+        $carouselActive.fadeIn();
+        $carouselActive.addClass('active');
+    };
+
+    var carouselRotateSwitch = function () {
+        carouselPlay = setInterval(function () {
+            $carouselActive = slider.settings.slides.filter('.active').next();
+            if ($carouselActive.length === 0) {
+                $carouselActive = slider.settings.slides.first();
+            };
+            carouselRotate();
+        }, slider.settings.sliderTime);
+    };
+
+    slider.init();
+};

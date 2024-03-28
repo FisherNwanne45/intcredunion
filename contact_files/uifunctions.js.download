@@ -1,0 +1,208 @@
+﻿var apply = apply || {};
+
+/**
+ * Namespace all apply form JavaScript
+ */
+apply.uifunctions = (function () {
+
+    /**
+     * Prevents default ActionName for address lookup buttons
+     */
+    var clearHyperlinkButtonsNavigation = function () {
+        $('.address-supply-lookup').click(function (e) {
+            e.preventDefault();
+        });
+    };
+
+
+    /**
+     * Initialises collapsible elements and custom radio and check boxes
+     */
+    var initialiseCustomElements = function () {
+        $('.collapsible').collapsible(); //initialise collapsible elements
+        $('.custom-radios').customRadios(); //initialise custom radio buttons
+
+        //if ($('html').hasClass('generatedcontent')) {
+        $('.custom-checkbox').customCheckbox(); //initialise custom checkboxes if supports generated content (for web fonts)
+        //}
+    };
+
+
+    /**
+     * Calculates the age, in years, given a date
+     * @param {date} date The date to calcualte from
+     */
+    var ageInYears = function (date) {
+        var now = new Date(); //get current date
+
+        function isLeap(year) { //simple leap year test based on year
+            return year % 4 == 0 && (year % 100 != 0 || year % 400 == 0);
+        }
+
+        // days since the birthdate    
+        var days = Math.floor((now.getTime() - date.getTime()) / 1000 / 60 / 60 / 24);
+        var age = 0;
+        // iterate the years
+        for (var y = date.getFullYear() ; y <= now.getFullYear() ; y++) {
+            var daysInYear = isLeap(y) ? 366 : 365;
+            if (days >= daysInYear) {
+                days -= daysInYear;
+                age++;
+                // increment the age only if there are available enough days for the year.
+            }
+        }
+        return age;
+    };
+
+
+    /**
+     * Show a general alert
+     * @param {$} $element The error element to show
+     * @param {string} message The error message to show
+     * @param {boolean} jump Whether to scroll the user up to the error
+     */
+    var showAlert = function ($element, message, jump) {
+        if ($element === undefined) { //if element not defined then use the general section error message
+            $element = $('.form-error');
+        }
+        if (message === undefined) { //if message is not defined then use the default message below
+            message = '<i class="icon-warning-sign icon-2x"></i> There are some invalid or incomplete fields below, please complete them to proceed';
+        }
+        
+        // ReSharper disable QualifiedExpressionMaybeNull
+        
+        $element.html(message); //set text of message (can contain html)
+        $element.slideDown(); //show the error message
+        jump = (jump != undefined) ? jump : true; //set jump to default to true if undefined
+        if (jump) { //if jump is true then scroll the use to the error message
+            if ($element.position() != undefined)
+            {
+                $('html, body').scrollTop($element.position().top);
+            }
+        }
+
+        // ReSharper restore QualifiedExpressionMaybeNull
+        return true;
+    };
+
+
+    /**
+     * Removes (hides) an alert
+     * @param {$} $element The Element to hide
+     */
+    var removeAlert = function ($element) {
+        if ($element === undefined) { //if element is not defined, then default to general section error
+            $element = $('.form-error');
+        }
+
+        // ReSharper disable QualifiedExpressionMaybeNull
+
+        $element.html(''); //set content of error to blank
+        $element.hide(); //hide the error
+
+        // ReSharper restore QualifiedExpressionMaybeNull
+        return true;
+    };
+
+    /**
+     * Monitors a page for inactivity and fires a page timeout ActionName if inactive for specified length of time
+     * @param {int} timeout The length of time in ms that a page has to be inactive for to trigger the warning
+     * @param {int} timeout The length of time in ms that a page has to be inactive for (from the warning) to trigger the redirect
+     */
+    var monitorTimeout = function (warningTimeout, redirectTimeout) {
+
+        if (typeof warningTimeout === "undefined") {
+            warningTimeout = 1800000; // 30 mins
+        }
+        if (typeof warningTimer !== "undefined") {
+            clearTimeout(warningTimer);
+        }
+        warningTimer = setTimeout(function () { timeout(warningTimeout, redirectTimeout); }, warningTimeout); //start timer
+        
+    };
+
+    var restartTimer = function () { //reset timer 
+        $.ajax(applyConfig.baseUrl + 'servicing/service/extendsession');
+        resetTimeout();
+        monitorTimeout(applyConfig.warningTimeout, applyConfig.redirectTimeout); //reset timeout
+    }
+
+    /**
+     * Displays a timeout message to the user to see if they want to continue filling out the form, else they will be redirected
+     * @param {int} timeout The length of time in ms that a page has to be inactive for to trigger the warning
+     * @param {int} timeout The length of time in ms that a page has to be inactive for (from the warning) to trigger the redirect
+     */
+    var timeout = function (warningTimout, redirectTimeout) {
+        var seconds = parseInt(redirectTimeout / 1000), saveButton = '';
+        var behaviourFx = $('#your-details-save').data('behaviour');
+        var btnClick = 'none';
+
+        if ($('#yourdetails').hasClass('opened')) {
+            if (apply.validation.validateYourDetailsSection({ hightlight: false, quiet: true })) {
+                saveButton = '<button id="timeout-save" type="button" class="mfp-close btn btn-small save">Save application</button>';
+            }
+        }
+        $.magnificPopup.open({
+            items: {
+                src: '<div class="page-warning alert alert-warning">' +
+                    '<i class="page-warning-icon icon-exclamation-sign icon-2x"></i>' +
+                    ' For security reasons, this page will timeout in<br/>' +
+                    '<span class="page-timeout-seconds">' + seconds + '</span><br/>' +
+                    '<button type="button" class="mfp-close btn btn-small page-timeout-continue">I need more time &rsaquo;</button>' +
+                    saveButton + '</div>'
+            },
+            type: 'inline',
+            callbacks: {
+                afterClose: function (e) {
+                    if (btnClick === 'continue') {
+                        e.preventDefault();
+                        restartTimer();
+                    } else if (btnClick == 'save') {
+                        eval(behaviourFx);
+                    }
+                }
+            },
+            closeOnBgClick: false
+        }, 0);
+        $('.page-timeout-seconds').text(seconds); //display number of seconds left
+        if (countdown === undefined) {
+            clearInterval(countdown);
+        }
+        countdown = setInterval(function () { //update countdown every second
+            seconds--;
+            $('.page-timeout-seconds').text(seconds);
+            if (seconds == 0) {
+                window.location.href = applyConfig.baseUrl + 'servicing/timeout';
+            }
+        }, 1000);
+        $('.page-timeout-continue').on('click', function (e) { //reset timer on user clicking yes button
+            btnClick = 'continue';
+        });
+        $('#timeout-save').on('click', function () {
+            btnClick = 'save';
+        });
+    };
+    
+    var resetTimeout = function() {
+        clearInterval(countdown);
+        clearTimeout(warningTimer);
+        var $warning = $('.page-warning');
+        if ($warning.length) {
+            $warning.slideUp();
+        }
+        monitorTimeout(applyConfig.warningTimeout, applyConfig.redirectTimeout); //reset timeout
+    };
+
+    var warningTimer; //the timer for the page timeout warning
+    var countdown; // the countdown for the page timeout warning
+
+    return { //Make appropriate functions public
+        clearHyperlinkButtonsNavigation: clearHyperlinkButtonsNavigation,
+        initialiseCustomElements: initialiseCustomElements,
+        ageInYears: ageInYears,
+        showAlert: showAlert,
+        removeAlert: removeAlert,
+        monitorTimeout: monitorTimeout,
+        resetTimeout: resetTimeout
+    };
+})();

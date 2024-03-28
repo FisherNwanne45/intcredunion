@@ -1,0 +1,1393 @@
+﻿(function ($) {
+    // if xregexp not loaded use standard regexp
+    if (window.XRegExp == null) {
+        window.XRegExp = window.RegExp;
+    }
+    // javascript input validations
+    var IE = window.IE = window.IE || {};
+    IE.Validators = {
+        "ajax": function ($input) {
+            if (isBadInput($input)) {
+                return false;
+            }
+            var action = $input.data("ajax-url");
+            var async = $input.data("ajax-async");
+            async = async == null ? false : async.toLowerCase() == "true";
+            var value = $input.val();
+            if (async) {
+                // async not currently implemented
+                return false;
+            } else {
+                var url = action + '?value=' + escape(value);
+                var text = $.ajax({ type: "GET", async: false, url: url }).responseText;
+                if (typeof text === 'undefined' || text == null || text.length === 0) {
+                    text = {};
+                    return false;
+                } else {
+                    text = text.replace(/'/g, "\"");
+                    var returned = $.parseJSON(text);
+                    return returned.result;
+                }
+            }
+
+        },
+        "pattern": function ($input) {
+            if (isBadInput($input)) {
+                return false;
+            }
+            var pattern = $input.data("pattern");
+            var regEx = XRegExp(pattern);
+            return $input.val().match(regEx) != null || !!$input.val() == false;
+        },
+        "numeric": function ($input) {
+            if (isBadInput($input)) {
+                return false;
+            }
+            return $.isNumeric($input.val()) || $input.val() == "";
+        },
+        "lengthrange": function ($input) {
+            if (isBadInput($input)) {
+                return false;
+            }
+            var min = $input.data("minlength");
+            var max = $input.data("maxlength");
+            var value = $.trim($input.val()).length;
+            return value >= min && value <= max || $input.val() == "";
+        },
+        "minlength": function ($input) {
+            if (isBadInput($input)) {
+                return false;
+            }
+            var min = $input.data("minlength");
+            var value = $.trim($input.val()).length;
+            return value >= min || value == 0 || $input.val() == "";
+        },
+        "maxlength": function ($input) {
+            if (isBadInput($input)) {
+                return false;
+            }
+            var max = $input.data("maxlength");
+            var value = $.trim($input.val()).length;
+            return value <= max || value == 0 || $input.val() == "";
+        },
+        "range": function ($input) {
+            var min = parseFloat($input.data("min"));
+            var max = parseFloat($input.data("max"));
+            var inputVal;
+            var value;
+            if ($input.is("input, select, textarea")) {
+                if (isBadInput($input)) {
+                    return false;
+                }
+                value = parseFloat($.trim($input.val()));
+                inputVal = $input.val();
+            } else {
+                var whole = $input.find("[data-pound], [data-whole], [data-integer], .input-pounds, .input-whole, .input-integer").val();
+                var fractional = $input.find("[data-pence], [data-pennies], [data-fraction], [data-fractional], .input-pence, .input-pennies, .input-fraction, .input-fractional").val();
+                inputVal = "";
+                if (whole != "" && fractional != "") {
+                    inputVal = whole + "." + fractional;
+                }
+                value = parseFloat(inputVal);
+            }
+            return $.isNumeric($.trim(inputVal)) && value >= min && value <= max || inputVal == "";
+        },
+        "min": function ($input) {
+            var min = parseFloat($input.data("min"));
+            var inputVal;
+            var value;
+            if ($input.is("input, select, textarea")) {
+                if (isBadInput($input)) {
+                    return false;
+                }
+                value = parseFloat($.trim($input.val()));
+                inputVal = $input.val();
+            } else {
+                var whole = $input.find("[data-pound], [data-whole], [data-integer], .input-pounds, .input-whole, .input-integer").val();
+                var fractional = $input.find("[data-pence], [data-pennies], [data-fraction], [data-fractional], .input-pence, .input-pennies, .input-fraction, .input-fractional").val();
+                inputVal = "";
+                if (whole != "" && fractional != "") {
+                    inputVal = whole + "." + fractional;
+                }
+                value = parseFloat(inputVal);
+            }
+            return $.isNumeric($.trim(inputVal)) && value >= min || $input.val() == "";
+        },
+        "max": function ($input) {
+            var max = parseFloat($input.data("max"));
+            var inputVal;
+            var value;
+            if ($input.is("input, select, textarea")) {
+                if (isBadInput($input)) {
+                    return false;
+                }
+                value = parseFloat($.trim($input.val()));
+                inputVal = $input.val();
+            } else {
+                var whole = $input.find("[data-pound], [data-whole], [data-integer], .input-pounds, .input-whole, .input-integer").val();
+                var fractional = $input.find("[data-pence], [data-pennies], [data-fraction], [data-fractional], .input-pence, .input-pennies, .input-fraction, .input-fractional").val();
+                inputVal = "";
+                if (whole != "" && fractional != "") {
+                    inputVal = whole + "." + fractional;
+                }
+                value = parseFloat(inputVal);
+            }
+            return $.isNumeric($.trim(inputVal)) && value <= max || $input.val() == "";
+        },
+        "minimumage": function ($input) {
+            var min = parseInt($input.data("minimumage"));
+            var today = new Date();
+            var dob = substituteIfDateSelect($input);
+            var birthDate = new Date(dob.val());
+            var age = today.getFullYear() - birthDate.getFullYear();
+            var m = today.getMonth() - birthDate.getMonth();
+            if (m < 0 || (m === 0 && today.getDate() < birthDate.getDate())) {
+                age--;
+            }
+            return age >= min || isNaN(birthDate);
+        },
+        "maximumage": function ($input) {
+            var max = parseInt($input.data("maximumage"));
+            var today = new Date();
+            var dob = substituteIfDateSelect($input);
+            var birthDate = new Date(dob.val());
+            var age = today.getFullYear() - birthDate.getFullYear();
+            var m = today.getMonth() - birthDate.getMonth();
+            if (m < 0 || (m === 0 && today.getDate() < birthDate.getDate())) {
+                age--;
+            }
+            return age <= max || isNaN(birthDate);
+        },
+        "compare": function ($input) {
+            if (isBadInput($input)) {
+                return false;
+            }
+            var input = $input.val();
+            var form = $input[0].form;
+            if (form == null) {
+                form = $input.closest("form");
+            }
+            var otherInput = $input.data("compare");
+            var comparesearch = findInput($(form), otherInput);
+
+            var compare = $(comparesearch).val();
+            return input == compare;
+        },
+        "ignorecasecompare": function ($input) {
+            if (isBadInput($input)) {
+                return false;
+            }
+            var input = $input.val();
+            var form = $input[0].form;
+            if (form == null) {
+                form = $input.closest("form");
+            }
+            var otherInput = $input.data("ignorecasecompare");
+            var comparesearch = findInput($(form), otherInput);
+
+            var compare = $(comparesearch).val();
+            return input.toLowerCase() == compare.toLowerCase();
+        },
+        "dateselectnotempty": function ($input) {
+            var $day = $input.find("select[name='day'] option:selected, select[data-day] option:selected, input[data-day], input[name='day']");
+            var $month = $input.find("select[name='month'] option:selected, select[data-month] option:selected, input[data-month], input[name='month']");
+            var $year = $input.find("select[name='year'] option:selected, select[data-year] option:selected, input[data-year], input[name='year']");
+            var day = $day.val();
+            var month = $month.val();
+            var year = $year.val();
+
+            if (day == "" && month == "" && year == "") {
+                return false;
+            }
+
+            return true;
+        },
+        "dateselect": function ($input) {
+            var $day = $input.find("select[name='day'] option:selected, select[data-day] option:selected, input[data-day], input[name='day']");
+            var $month = $input.find("select[name='month'] option:selected, select[data-month] option:selected, input[data-month], input[name='month']");
+            var $year = $input.find("select[name='year'] option:selected, select[data-year] option:selected, input[data-year], input[name='year']");
+            var day = $day.val();
+            var month = $month.val();
+            var year = $year.val();
+
+            if (isBadInput($day) || (day != "" && !$.isNumeric(day))) {
+                return false;
+            }
+            if (isBadInput($month) || (month != "" && !$.isNumeric(month))) {
+                return false;
+            }
+            if (isBadInput($year) || (year != "" && !$.isNumeric(year))) {
+                return false;
+            }
+
+            if ((day == "" || day == 0 || !$.isNumeric(day)) ||
+                (month == "" || month == 0 || !$.isNumeric(month)) ||
+                (year == "" || year == 0 || !$.isNumeric(year)) ||
+                (year < 1900)) {
+                return false;
+            }
+
+            if ($.isNumeric(year) && year < 1900)
+                return false;
+
+            if ($.isNumeric(day) && $.isNumeric(month) && $.isNumeric(year) && isValidDate(day, month, year)) {
+                month = month - 1;
+                var tempDate = new Date(year, month.toString(), day);
+                if ((year == tempDate.getFullYear() || (year == tempDate.getYear() && tempDate.getYear() < 100)) && (month == tempDate.getMonth()) && (day == tempDate.getDate())) {
+                    $input.val(tempDate);
+                    return true;
+                } else {
+                    return false;
+                }
+            } else {
+                return false;
+            }
+        },
+        "cardexpiresend": function ($input) {
+            $input.val("");
+            var day = 1;
+            var month = $input.find("select[name='month'] option:selected, select[data-month] option:selected, input[data-month], input[name='month']").val();
+            var year = $input.find("select[name='year'] option:selected, select[data-year] option:selected, input[data-year], input[name='year']").val();
+            if ((month == "" || month == 0 || !$.isNumeric(month)) &&
+                (year == "" || year == 0 || !$.isNumeric(year))) {
+                return true;
+            }
+            if ($.isNumeric(day) && $.isNumeric(month) && $.isNumeric(year)) {
+                month = (month - 0) - 1;
+                if (year < 100) {
+                    year = (year - 0) + 2000;
+                }
+                var d = new Date(year, month.toString(), day);
+                if (!isNaN(d)) {
+                    var m = new Date(d.setMonth(d.getMonth() + 1));
+                    var expiry = new Date(m.setDate(m.getDate() - 1));
+                    var now = new Date;
+                    return expiry >= now;
+                }
+
+            }
+            return true;
+        },
+        "cardvalidfrom": function ($input) {
+            $input.val("");
+            var day = 1;
+            var month = $input.find("select[name='month'] option:selected, select[data-month] option:selected, input[data-month], input[name='month']").val();
+            var year = $input.find("select[name='year'] option:selected, select[data-year] option:selected, input[data-year], input[name='year']").val();
+            if ((month == "" || month == 0 || !$.isNumeric(month)) &&
+                (year == "" || year == 0 || !$.isNumeric(year))) {
+                return true;
+            }
+            if ($.isNumeric(day) && $.isNumeric(month) && $.isNumeric(year)) {
+                month = (month - 0) - 1;
+                if (year < 100) {
+                    year = (year - 0) + 2000;
+                }
+                var expiry = new Date(year, month.toString(), day);
+                if (!isNaN(expiry)) {
+                    var now = new Date;
+                    return expiry <= now;
+                }
+            }
+            return true;
+        },
+        "pinpositions": function ($input) {
+            var valid = true;
+            var raw = "";
+            $input.find(".pin").each(function () {
+                if (!($.isNumeric($(this).val()) && (0 + $(this).val()) >= 0 && (0 + $(this).val()) <= 9)) {
+                    valid = false;
+                }
+                raw = raw + $(this).val();
+            });
+            $input.val(raw);
+            return valid;
+        },
+        "sortcode": function ($input) {
+            var valid;
+            var code = "";
+            var raw = "";
+            var pattern = /^[0-9]{2}[-][0-9]{2}[-][0-9]{2}$/;
+            if ($input.is("input, textarea")) {
+
+                valid = $input.val().match(pattern) != null || $input.val() == "";
+            } else {
+                $input.val("");
+                $input.find("input, select").each(function () {
+                    code = code + '-' + $(this).val();
+                    raw = raw + $(this).val();
+                });
+                $input.val(raw);
+                code = code.substr(1);
+                valid = code.match(pattern) != null || !!raw == false;
+            }
+            return valid;
+        },
+        "checked": function ($input) {
+            if ($input.prop('type') == 'hidden') {
+                return $input.val().toLowerCase() != 'false';
+            } else if ($input.prop('type') == 'checkbox') {
+                return $input.prop('checked');
+            } else if ($input.is("select")) {
+                return $input.find("option:selected").val().toLowerCase() != "false";
+            } else {
+                return true;
+            }
+        },
+        "unchecked": function ($input) {
+            if ($input.prop('type') == 'hidden') {
+                return $input.val().toLowerCase() != 'true';
+            } else if ($input.prop('type') == 'checkbox') {
+                return !$input.prop('checked');
+            } else if ($input.is("select")) {
+                return $input.find("option:selected").val().toLowerCase() != "true";
+            } else {
+                return true;
+            }
+        },
+        "creditcard": function ($input) {
+            // uses Luhn algorithm to match up with server side version
+            return $input.luhn10() || $input.val() == "";
+        },
+        "hashedcreditcard": function ($input) {
+            if (isBadInput($input)) {
+                return false;
+            }
+            var pattern = $input.data("hashedcreditcardpattern");
+            var regEx = XRegExp(pattern);
+            var isHashed = $input.val().match(regEx) != null || !!$input.val() == false;
+            if (isHashed) {
+                return true;
+            }
+            // uses Luhn algorithm to match up with server side version
+            return $input.luhn10() || $input.val() == "";
+        },
+        "postcode": function ($input) {
+            var pattern = "^(GIR {0,2}0AA)|(((A[BL]|B[ABFDHLNRSTX]?|C[ABFHMORTVW]|D[ADEGHLNTY]|E[HNX]?|F[KY]|G[LUY]?|H[ADGPRSUX]|I[GMPV]|JE|K[ATWY]|L[ADELNSU]?|M[EKL]?|N[EGNPRW]?|O[LX]|P[AEHLOR]|R[GHM]|S[AEGKLMNOPRSTY]?|T[ADFNQRSW]|UB|W[ADFNRSV]|YO|ZE)[1-9]?[0-9]|((E|N|NW|SE|SW|W)1|EC[1-4]|WC[12])[A-HJKMNPR-Y]|(SW|W)([2-9]|[1-9][0-9])|EC[1-9][0-9]) {0,2}[0-9][ABD-HJLNP-UW-Z]{2})$";
+            var regEx = new RegExp(pattern, "i");
+            var matches = $.trim($input.val()).match(regEx);
+            return matches != null && $.trim($input.val()) == matches[0] || $input.val() == "";
+        },
+        "email": function ($input) {
+            var pattern = /^(([A-Za-z0-9]+_+)|([A-Za-z0-9]+\-+)|([A-Za-z0-9]+\.+)|([A-Za-z0-9]+\++))*[A-Za-z0-9]+@((\w+\-+)|(\w+\.))*\w{1,63}\.[a-zA-Z]{2,6}$/;
+            return $input.val().match(pattern) != null || $input.val() == "";
+        },
+        "phone": function ($input) {
+            if (isBadInput($input)) {
+                return false;
+            }
+            var pattern = /^[0-9\(\)\-\+\* ]{1,50}$/;
+            return $input.val().match(pattern) != null || $input.val() == "";
+        },
+        "required": function ($input) {
+            if ($input.hasClass("validation-container")) {
+                return !!$input.val();
+            } else if ($input.is("input, select, textarea")) {
+                if (isBadInput($input)) {
+                    return true;
+                }
+                return !!$input.val();
+            } else {
+                var isValid = true;
+                $input.find('input, select, textarea').each(function () {
+                    if ($(this).val() == "") {
+                        isValid = false;
+                    }
+                });
+                return isValid;
+            }
+        },
+        "requiredwhen": function ($input, checkPassed) {
+            var form = $input[0].form;
+            if (form == null) {
+                form = $input.closest("form");
+            }
+            var otherInputInfo = $input.data("requiredwhen");
+            var otherInput = otherInputInfo.split(":")[0];
+            var operator = otherInputInfo.split(":")[1];
+
+            var comparesearch = findInput($(form), otherInput);
+
+            var original = comparesearch;
+            comparesearch = substituteIfRadioButton(comparesearch);
+            if (comparesearch == null) {
+                return true;
+            }
+
+            var compare = $(comparesearch).val();
+            var values = $input.getValueAttributes();
+            var type = $input.data("requiredwhen-type");
+            var regEx = new XRegExp(compare);
+            if (type == null) {
+                type = "";
+            }
+
+            var isNumeric = function (input, t) {
+                return ((input - 0) == input && input.length > 0) || (t != null && t.indexOf("int") !== -1) ||
+                    t == "float" || t == "double" || t == "decimal" ||
+                    t == "currency" || t == "number" || t == "numeric";
+            };
+
+            var isDate = function (input, t) {
+                var dateTest = new RegExp(/(?=\d)^(?:(?!(?:10\D(?:0?[5-9]|1[0-4])\D(?:1582))|(?:0?9\D(?:0?[3-9]|1[0-3])\D(?:1752)))((?:0?[13578]|1[02])|(?:0?[469]|11)(?!\/31)(?!-31)(?!\.31)|(?:0?2(?=.?(?:(?:29.(?!000[04]|(?:(?:1[^0-6]|[2468][^048]|[3579][^26])00))(?:(?:(?:\d\d)(?:[02468][048]|[13579][26])(?!\x20BC))|(?:00(?:42|3[0369]|2[147]|1[258]|09)\x20BC))))))|(?:0?2(?=.(?:(?:\d\D)|(?:[01]\d)|(?:2[0-8])))))([-.\/])(0?[1-9]|[12]\d|3[01])\2(?!0000)((?=(?:00(?:4[0-5]|[0-3]?\d)\x20BC)|(?:\d{4}(?!\x20BC)))\d{4}(?:\x20BC)?)(?:$|(?=\x20\d)\x20))?((?:(?:0?[1-9]|1[012])(?::[0-5]\d){0,2}(?:\x20[aApP][mM]))|(?:[01]\d|2[0-3])(?::[0-5]\d){1,2})?$/);
+                return dateTest.test(input) || t == "datetime" || t == "date";
+            };
+
+            var isBool = function (input, t) {
+                return input === true || input === false || input === "true" || input === "false" || t == "boolean" || t == "bool";
+            };
+
+            if (isDate(values, type)) {
+                for (dv in values) {
+                    values[dv] = Date.parse(values[dv]);
+                }
+                compare = Date.parse(compare);
+            } else if (isBool(values, type)) {
+                for (dv in values) {
+                    if (values[dv].toLowerCase() == "false") values[dv] = false;
+                    values[dv] = !!values[dv];
+                }
+                if (compare.toLowerCase() == "false") compare = false;
+
+                compare = !!compare;
+            } else if (isNumeric(values, type)) {
+                for (dv in values) {
+                    values[dv] = parseFloat(values[dv]);
+                }
+                compare = parseFloat(compare);
+            }
+
+
+            var inputFound = IE.Validators["required"]($input);
+            var isValid = true;
+            var isPassed = true;
+            var passed = false;
+
+            var dv;
+            if (operator === "RegExMatch") {
+                for (dv in values) {
+                    if (values[dv].match(regEx) != null) {
+                        passed = true;
+                        break;
+                    }
+                }
+                isPassed = passed;
+                if (!$input.val() && passed) {
+                    isValid = false;
+                }
+            }
+
+            if (operator === "NotRegExMatch") {
+                for (dv in values) {
+                    if (values[dv].match(regEx) != null) {
+                        passed = true;
+                        break;
+                    }
+                }
+                isPassed = !passed;
+                if (!inputFound && !passed) {
+                    isValid = false;
+                }
+            }
+
+            if (operator === "InRegEx") {
+                for (dv in values) {
+                    if (values[dv].match(regEx) != null) {
+                        passed = true;
+                        break;
+                    }
+                }
+                isPassed = passed;
+                if (!inputFound && passed) {
+                    isValid = false;
+                }
+
+            }
+
+            if (operator === "NotInRegEx") {
+                for (dv in values) {
+                    if (values[dv].match(regEx) != null) {
+                        passed = true;
+                        break;
+                    }
+                }
+                isPassed = !passed;
+                if (!inputFound && !passed) {
+                    isValid = false;
+                }
+            }
+
+            if (operator === "In") {
+                for (dv in values) {
+                    if (values[dv] === compare) {
+                        passed = true;
+                        break;
+                    }
+                }
+                isPassed = passed;
+                if (!inputFound && passed) {
+                    isValid = false;
+                }
+            }
+
+            if (operator === "NotIn") {
+                for (dv in values) {
+                    if (values[dv] === compare) {
+                        passed = true;
+                        break;
+                    }
+                }
+                isPassed = !passed;
+                if (!inputFound && !passed) {
+                    isValid = false;
+                }
+            }
+
+            if (operator === "EqualTo") {
+                for (dv in values) {
+                    if (values[dv] === compare) {
+                        passed = true;
+                        break;
+                    }
+                }
+                isPassed = passed;
+                if (!inputFound && passed) {
+                    isValid = false;
+                }
+                ;
+            }
+
+            if (operator === "NotEqualTo") {
+                for (dv in values) {
+                    if (values[dv] === compare) {
+                        passed = true;
+                        break;
+                    }
+                }
+                isPassed = !passed;
+                if (!inputFound && !passed) {
+                    isValid = false;
+                }
+            }
+
+            if (operator === "GreaterThan") {
+                for (dv in values) {
+                    if (values[dv] < compare) {
+                        passed = true;
+                        break;
+                    }
+                }
+                isPassed = passed;
+                if (!inputFound && passed) {
+                    isValid = false;
+                }
+            }
+
+            if (operator === "LessThan") {
+                for (dv in values) {
+                    if (values[dv] > compare) {
+                        passed = true;
+                        break;
+                    }
+                }
+                isPassed = passed;
+                if (!inputFound && passed) {
+                    isValid = false;
+                }
+            }
+
+            if (operator === "GreaterThanOrEqualTo") {
+                for (dv in values) {
+                    if (values[dv] <= compare) {
+                        passed = true;
+                        break;
+                    }
+                }
+                isPassed = passed;
+                if (!inputFound && passed) {
+                    isValid = false;
+                }
+            }
+
+            if (operator === "LessThanOrEqualTo") {
+                for (dv in values) {
+                    if (values[dv] >= compare) {
+                        passed = true;
+                        break;
+                    }
+                }
+                isPassed = passed;
+                if (!inputFound && passed) {
+                    isValid = false;
+                }
+            }
+
+            if (comparesearch != original) {
+                comparesearch.remove();
+            }
+            if (isBadInput($input)) {
+                return false;
+            }
+
+            if (checkPassed) {
+                return isPassed;
+            }
+            return isValid;
+
+        },
+        "isvalidwhen": function ($input) {
+            if (isBadInput($input)) {
+                return false;
+            }
+
+            var form = $input[0].form;
+            if (form == null) {
+                form = $input.closest("form");
+            }
+            var otherInputInfo = $input.data("isvalidwhen");
+            var otherInput = otherInputInfo.split(":")[0];
+            var operator = otherInputInfo.split(":")[1];
+            var comparesearch = findInput($(form), otherInput);
+
+
+            var original = comparesearch;
+            comparesearch = substituteIfRadioButton(comparesearch);
+            if (comparesearch == null) {
+                return true;
+            }
+
+            var value = substituteIfDateSelect($input).val();
+            var $day = $input.find("select[name='day'] option:selected, select[data-day] option:selected, input[data-day], input[name='day']");
+            var $month = $input.find("select[name='month'] option:selected, select[data-month] option:selected, input[data-month], input[name='month']");
+            var $year = $input.find("select[name='year'] option:selected, select[data-year] option:selected, input[data-year], input[name='year']");
+            if (($day.length > 0 && ((!$.isNumeric($day.val()) && $day.val() != "") || isBadInput($day))) ||
+                ($month.length > 0 && ((!$.isNumeric($month.val()) && $month.val() != "") || isBadInput($month))) ||
+                ($year.length > 0 && ((!$.isNumeric($year.val()) && $year.val() != "") || isBadInput($year)))) {
+                value = "invalid";
+            }
+            var compare = substituteIfDateSelect($(comparesearch)).val();
+            var regEx = new XRegExp(compare);
+
+            if (!!value == false) {
+                return true;
+            }
+
+            var passed = false;
+
+            var type = $input.data("isvalidwhen-type");
+            if (type == null) {
+                type = "";
+            }
+
+            var isNumeric = function (input, t) {
+                return ((input - 0) == input && input.length > 0) || t.indexOf("int") !== -1 ||
+                    t == "float" || t == "double" || t == "decimal" ||
+                    t == "currency" || t == "number" || t == "numeric";
+            };
+
+            var isDate = function (input, t) {
+                var dateTest = new RegExp(/(?=\d)^(?:(?!(?:10\D(?:0?[5-9]|1[0-4])\D(?:1582))|(?:0?9\D(?:0?[3-9]|1[0-3])\D(?:1752)))((?:0?[13578]|1[02])|(?:0?[469]|11)(?!\/31)(?!-31)(?!\.31)|(?:0?2(?=.?(?:(?:29.(?!000[04]|(?:(?:1[^0-6]|[2468][^048]|[3579][^26])00))(?:(?:(?:\d\d)(?:[02468][048]|[13579][26])(?!\x20BC))|(?:00(?:42|3[0369]|2[147]|1[258]|09)\x20BC))))))|(?:0?2(?=.(?:(?:\d\D)|(?:[01]\d)|(?:2[0-8])))))([-.\/])(0?[1-9]|[12]\d|3[01])\2(?!0000)((?=(?:00(?:4[0-5]|[0-3]?\d)\x20BC)|(?:\d{4}(?!\x20BC)))\d{4}(?:\x20BC)?)(?:$|(?=\x20\d)\x20))?((?:(?:0?[1-9]|1[012])(?::[0-5]\d){0,2}(?:\x20[aApP][mM]))|(?:[01]\d|2[0-3])(?::[0-5]\d){1,2})?$/);
+                return dateTest.test(input) || t == "datetime" || t == "date";
+            };
+
+            var isBool = function (input, t) {
+                return input === true || input === false || input === "true" || input === "false" || t == "boolean" || t == "bool";
+            };
+
+            if (isDate(value, type)) {
+                value = Date.parse(value);
+                compare = Date.parse(compare);
+            } else if (isBool(value, type)) {
+                if (value.toLowerCase() == "false") value = false;
+                if (compare.toLowerCase() == "false") compare = false;
+                value = !!value;
+                compare = !!compare;
+            } else if (isNumeric(value, type)) {
+                value = parseFloat(value);
+                compare = parseFloat(compare);
+            }
+
+            if (operator === "RegExMatch") {
+                passed = value.match(regEx) != null;
+            }
+            if (operator === "NotRegExMatch") {
+                passed = value.match(regEx) == null;
+            }
+            if (operator === "EqualTo") {
+                passed = value === compare;
+            }
+            if (operator === "NotEqualTo") {
+                passed = value != compare;
+            }
+            if (operator === "GreaterThan") {
+                passed = value > compare;
+            }
+            if (operator === "LessThan") {
+                passed = value < compare;
+            }
+            if (operator === "GreaterThanOrEqualTo") {
+                passed = value >= compare;
+            }
+            if (operator === "LessThanOrEqualTo") {
+                passed = value <= compare;
+            }
+
+            if (comparesearch != original) {
+                comparesearch.remove();
+            }
+
+            return passed;
+
+        },
+        "nolaterthan": function ($input) {
+            $input = substituteIfDateSelect($input);
+            if ($input.val() == "") {
+                return true;
+            }
+
+            var value = $input.val();
+            var comparesearch = $input.data("nolaterthan");
+            var quantity = $input.data("nolaterthan-qty");
+            if (isNaN(quantity)) {
+                quantity = 0;
+            }
+            var compare;
+            var date = new Date();
+
+            switch (comparesearch) {
+                case "FirstDayOfMonth":
+                    var firstDay = new Date(date.getFullYear(), date.getMonth(), 1);
+                    compare = firstDay;
+                    break;
+                case "Yesterday":
+                    var yesterday = new Date(date.getFullYear(), date.getMonth(), date.getDate() - 1);
+                    compare = yesterday;
+                    break;
+                case "Today":
+                    compare = date;
+                    break;
+                case "Tomorrow":
+                    var tomorrow = new Date(date.getFullYear(), date.getMonth(), date.getDate() + 1);
+                    compare = tomorrow;
+                    break;
+                case "LastDayOfMonth":
+                    var lastDay = new Date(date.getFullYear(), date.getMonth() + 1, 0);
+                    compare = lastDay;
+                    break;
+                case "Days":
+                    var days = new Date();
+                    days.setDate(days.getDate() + quantity);
+                    compare = days;
+                    break;
+                case "Months":
+                    var months = new Date();
+                    months.setMonth(months.getMonth() + quantity);
+                    var mCheck = new Date();
+                    if (months.getDate() != mCheck.getDate()) {
+                        months = new Date(date.getFullYear(), date.getMonth() + 1 + quantity, 0);
+                    }
+                    compare = months;
+                    break;
+                case "Years":
+                    var years = new Date();
+                    years.setFullYear(years.getFullYear() + quantity);
+                    compare = years;
+                    break;
+                default:
+                    return true;
+            }
+
+            value = Date.parse(value);
+
+            compare.setHours(0, 0, 0, 0);
+            compare = Date.parse(compare);
+
+            return value <= compare;
+
+        },
+        "nosoonerthan": function ($input) {
+            $input = substituteIfDateSelect($input);
+            if ($input.val() == "") {
+                return true;
+            }
+
+            var value = $input.val();
+            var comparesearch = $input.data("nosoonerthan");
+            var quantity = $input.data("nosoonerthan-qty");
+            if (isNaN(quantity)) {
+                quantity = 0;
+            }
+            var compare;
+            var date = new Date();
+
+            switch (comparesearch) {
+                case "FirstDayOfMonth":
+                    var firstDay = new Date(date.getFullYear(), date.getMonth(), 1);
+                    compare = firstDay;
+                    break;
+                case "Yesterday":
+                    var yesterday = new Date(date.getFullYear(), date.getMonth(), date.getDate() - 1);
+                    compare = yesterday;
+                    break;
+                case "Today":
+                    compare = date;
+                    break;
+                case "Tomorrow":
+                    var tomorrow = new Date(date.getFullYear(), date.getMonth(), date.getDate() + 1);
+                    compare = tomorrow;
+                    break;
+                case "LastDayOfMonth":
+                    var lastDay = new Date(date.getFullYear(), date.getMonth() + 1, 0);
+                    compare = lastDay;
+                    break;
+                case "Days":
+                    var days = new Date();
+                    days.setDate(days.getDate() + quantity);
+                    compare = days;
+                    break;
+                case "Months":
+                    var months = new Date();
+                    months.setMonth(months.getMonth() + quantity);
+                    var mCheck = new Date();
+                    if (months.getDate() != mCheck.getDate()) {
+                        months = new Date(date.getFullYear(), date.getMonth() + 1 + quantity, 0);
+                    }
+                    compare = months;
+                    break;
+                case "Years":
+                    var years = new Date();
+                    years.setFullYear(years.getFullYear() + quantity);
+                    compare = years;
+                    break;
+                default:
+                    return true;
+            }
+
+            value = Date.parse(value);
+
+            compare.setHours(0, 0, 0, 0);
+            compare = Date.parse(compare);
+
+            return value >= compare;
+
+        }
+    };
+
+    function isValidDate(day, month, year) {
+        var d = parseInt(day, 10);
+        var m = parseInt(month, 10);
+        var y = parseInt(year, 10);
+
+        var date = new Date(y, m - 1, d);
+        if (date.getFullYear() == y && date.getMonth() + 1 == m && date.getDate() == d) {
+            return true;
+        } else {
+            return false;
+        }
+
+    };
+
+    // get all value attributes for requiredwhen validation
+    function isBadInput($input) {
+        if ($input.attr("type") == "number" && $input[0].validity != null && $input[0].validity.badInput) {
+            return true;
+        }
+        return false;
+    };
+
+    // get all value attributes for requiredwhen validation
+    $.fn.getValueAttributes = function () {
+        var attributes = {};
+
+        if (this.length) {
+            $.each(this[0].attributes, function (index, attr) {
+                if (attr.name.substr(0, 24) === "data-requiredwhen-value-") {
+                    attributes[attr.name] = attr.value;
+                }
+            });
+        }
+
+        return attributes;
+    };
+
+    // clear all validation messages
+    $.fn.clearValidation = function (options) {
+        //TODO: clear validation state            
+        $(this).find(".validation-error-highlight").each(function (index, error) {
+            $(error).removeClass("validation-error-highlight");
+        });
+        $(this).find("[data-validation-error]").each(function (index, error) {
+            $(error).attr("data-validation-valid", $(error).attr("data-validation-error")).removeAttr("data-validation-error").text("");
+        });
+    };
+
+    // clear validation attributes for single input
+    $.fn.clearInputValidation = function (options) {
+        //TODO: clear validation state     
+        var $input = $(this);
+        setError($input.closest("form"), $input, "");
+        if ($input.find("select, input, textarea").removeClass("validation-error-highlight").length == 0) {
+            $input.removeClass("validation-error-highlight");
+        }
+
+        if ($input.prop("type") == "radio") {
+            $("[name='" + $input.attr("name") + "']").removeClass("validation-error-highlight");
+        }
+    };
+
+    // validate entire form
+    $.fn.validate = function (options) {
+        var that = this;
+        var hasErrors = false;
+        var errorSummary = "";
+        // loop through each input that is marked for validation
+        $(that).find("[data-validate]").each(function () {
+            // validate each input and add error text to error summary
+            if ($(this).parent().is(':visible')) {
+                var errorText = $(this).validateInput(options);
+                if (errorText != "") {
+                    errorSummary = errorSummary + '<li>' + errorText + '</li>';
+                }
+                hasErrors = (errorText != "") || hasErrors;
+            }
+        });
+        setSummary(this, errorSummary, options);
+        return !hasErrors;
+    };
+
+    // find an input by id, name or data-validate-name
+    // used to find inputs that are stored in attributes
+
+    function findInput(container, name) {
+        //TODO: Find a better way to find case-insensitive attributes
+
+        var id = name.replace(/[\[\]]/, "_");
+
+        var input = container.find("#" + id);
+
+
+
+        if (input.length == 0) {
+            input = container.find("[name='" + name + "']:first");
+        }
+
+
+        if (input.length == 0) {
+            container.find('*').each(function () {
+                if ($(this).attr('id') && $(this).attr('id').toLowerCase() == name.toLowerCase()) {
+                    input = $(this);
+                    return false;
+                }
+                return true;
+            });
+        }
+        if (input.length == 0) {
+            container.find('*').each(function () {
+                if ($(this).attr('name') && $(this).attr('name').toLowerCase() == name.toLowerCase()) {
+                    input = $("[name='" + $(this).attr('name') + "']:first");
+                    return false;
+                }
+                return true;
+            });
+        }
+        if (input.length == 0) {
+            container.find('*').each(function () {
+                if ($(this).attr('data-validate-name') && $(this).attr('data-validate-name').toLowerCase() == name.toLowerCase()) {
+                    input = $("[data-validate-name='" + $(this).attr('data-validate-name') + "']:first");
+                    return false;
+                }
+                return true;
+            });
+        }
+        return input;
+    }
+
+    // check if the input is a set of input or select elements inside a container
+    // if they are return the date value they contain between them
+
+    function substituteIfDateSelect(input) {
+        var val = "";
+        if (!input.is("input, select, textarea")) {
+            var $day = input.find("select[name='day'] option:selected, select[data-day] option:selected, input[data-day], input[name='day']");
+            var $month = input.find("select[name='month'] option:selected, select[data-month] option:selected, input[data-month], input[name='month']");
+            var $year = input.find("select[name='year'] option:selected, select[data-year] option:selected, input[data-year], input[name='year']");
+            var day = $day.val();
+            var month = $month.val();
+            var year = $year.val();
+            if ($.isNumeric(day) && $.isNumeric(month) && $.isNumeric(year)) {
+                month = month - 1;
+                val = new Date(year - 0, month - 0, day - 0);
+                if (val.getDate() != day || val.getMonth() != month || val.getFullYear() != year) {
+                    val = "";
+                }
+            }
+            input.val(val);
+        }
+        return input;
+    }
+
+    ;
+
+    // when validating against radio buttons create a hidden attribute for the set
+    // populate with validation attributes and value of selected radio button
+    // return this to be validated
+
+    function substituteIfRadioButton(input) {
+        var alternate;
+        var eleType = $(input).prop('type');
+        if (eleType == "radio") {
+            if ($(input).val() === $("[name='" + $(input).attr("name") + "']:first").val()) {
+                var alternateId = $(input).attr("id") + "_Hidden_Validator";
+                $("#" + alternateId).remove();
+                alternate = $("<input type='hidden' value='' id='" + alternateId + "'/>");
+                $(input).before(alternate);
+                var attributes = $(input).prop("attributes");
+                $.each(attributes, function (index, a) {
+                    if (a.name.toString().length > 5 && a.name.toString().substring(0, 5) == 'data-') {
+                        alternate.attr(a.name, a.value);
+                    }
+                });
+                $("[name='" + $(input).attr("name") + "']").each(function (index, radioEle) {
+                    if (radioEle.checked) {
+                        alternate.val($(radioEle).val());
+                    }
+                });
+                return alternate;
+            } else {
+                return null;
+            }
+        }
+        return input;
+    }
+
+    // validate a single input
+    $.fn.validateInput = function (options) {
+
+        var $original = $(this);
+        var $input = $original;
+        // check for multipart date select
+        $input = substituteIfDateSelect($input);
+        // process radio buttons for validation
+        var $tmp = substituteIfRadioButton($input);
+        if ($tmp == null) {
+            applyCustomValidation($original);
+            return "";
+        }
+
+        $input = $tmp;
+        // gate a list of all the validations that need to be processed
+        var validatorList = $input.data("validate") == null ? [] : $input.data("validate").split(' ');
+        // define and set variables
+        var thisError = false;
+        var errorText = "";
+
+        // loop through validators
+        $.each(IE.Validators, function (validatorName, validator) {
+            if (validatorList.indexOf(validatorName) != -1) {
+
+                // validate the input with the validator
+                var validated = validator($input);
+
+                thisError = !validated || thisError;
+
+
+                // if validation fails find error message to return
+
+                if (!validated) {
+                    errorText = getErrorText($input, validatorName);
+                    return false;
+                }
+            }
+
+        });
+
+        // remove substitute if radio button substitute was used
+        if ($input != $original && $original != null) {
+            $input.remove();
+            $input = $original;
+        }
+
+        //input field highlighting addition and removal
+        if (!(options && options.highlight === false)) {
+            setHighlight($input, options, errorText, thisError);
+        }
+
+        return errorText;
+    };
+
+    function setHighlight($input, options, errorText, thisError) {
+        // if option to remove validation from field set
+        if (options != null && options.removeOnly != null && options.removeOnly == true) {
+            if (errorText === "") {
+                setError($input.closest("form"), $input, errorText);
+
+                var unhighlightedElements = $input.find("select, input, textarea");
+                var numberOfItemsChanged = unhighlightedElements.removeClass("validation-error-highlight").length;
+                var accessiblityInput = unhighlightedElements;
+
+                if (numberOfItemsChanged == 0) {
+
+                    $input.removeClass("validation-error-highlight");
+                    accessiblityInput = $input;
+
+                }
+
+                if ($input.prop("type") == "radio") {
+
+                    accessiblityInput = $("[name='" + $input.attr("name") + "']");
+                    accessiblityInput.removeClass("validation-error-highlight");
+                }
+
+                disableAccessbilityClass(accessiblityInput);
+
+            }
+        } else if (options == null || (options && (options.quiet == null || options.quiet == false))) {
+            // if not in quiet mode
+            setError($input.closest("form"), $input, errorText);
+        }
+
+        if (options == null ||
+            (options && (options.highlight == null || options.highlight == true))) {
+
+            if (thisError && (options == null || (options.removeOnly == null || options.removeOnly == false))) {
+
+                var highlightElements = $input.find("select, input, textarea");
+                var numberOfItemsChanged = highlightElements.addClass("validation-error-highlight").length;
+                var accessiblityInput = highlightElements;
+
+                if (numberOfItemsChanged == 0) {
+                    $input.addClass("validation-error-highlight");
+                    accessiblityInput = $input;
+                }
+
+                if ($input.prop("type") == "radio") {
+                    accessiblityInput = $("[name='" + $input.attr("name") + "']");
+                    accessiblityInput.addClass("validation-error-highlight");
+                }
+
+                enableAccessbilityClass(accessiblityInput);
+
+            } else if (!thisError) {
+
+                var unhighlightedElements = $input.find("select, input, textarea");
+                var numberOfItemsChanged = unhighlightedElements.removeClass("validation-error-highlight").length;
+                var accessiblityInput = unhighlightedElements;
+
+                if (numberOfItemsChanged == 0) {
+                    $input.removeClass("validation-error-highlight");
+                    accessiblityInput = $input;
+                }
+
+                if ($input.prop("type") == "radio") {
+                    accessiblityInput = $("[name='" + $input.attr("name") + "']");
+                    accessiblityInput.removeClass("validation-error-highlight");
+                }
+
+                disableAccessbilityClass(accessiblityInput);
+            }
+        }
+
+        applyCustomValidation($input, thisError);
+    }
+
+    function disableAccessbilityClass($input) {
+        var validationElement = findElementWithAccessibilityClass($input, "span.help-block", ".validate-group");
+
+        if (validationElement !== null && validationElement !== undefined)
+            validationElement.attr("aria-invalid", "false");
+            $input.attr("aria-invalid", "false");
+    }
+
+    function enableAccessbilityClass($input) {
+        var validationElement = findElementWithAccessibilityClass($input, "span.help-block", ".validate-group");
+
+        if (validationElement !== null && validationElement !== undefined)
+            validationElement.attr("aria-invalid", "true");
+            $input.attr("aria-invalid", "true");
+    }
+
+    function hasInputCombinedControl($input, $classGroupName) {
+        var parent = $input.parent($classGroupName)[0];
+
+        return parent !== undefined;
+    }
+
+    function traceAncestorsForElementWithAccessibilityClass($input, $validateGroupName) {
+
+        if ($input === undefined)
+            return;
+
+        var parent = $input.parent($validateGroupName)[0];
+
+        return $(parent).siblings();
+    }
+
+    function findElementWithAccessibilityClass($input, $targetElement, $validateGroupName) {
+
+        if ($input === null && $input === undefined)
+            return;
+
+        var validationElement = $input;
+
+        if (($input.length !== undefined) && hasInputCombinedControl($input, $validateGroupName)) { //test for combined input elements
+
+            var validationGroupLevel = traceAncestorsForElementWithAccessibilityClass($($input[0]), $validateGroupName);
+
+            if (validationGroupLevel[0] === undefined)
+                validationElement = $(validationGroupLevel.context).children($targetElement);
+            else
+                validationElement = validationGroupLevel.siblings($targetElement);
+
+        } else {
+
+            validationElement = $input.siblings($targetElement);
+
+        }
+
+        return validationElement;
+    }
+
+    function applyCustomValidation($input, err) {
+        var id = $input.attr('id');
+        if (id === 'ExpiryDateMonth' || id === 'ExpiryDateYear' || id === 'ExpiryDate') {
+            var options = { highlight: false };
+            var monthErr = $('#ExpiryDateMonth').validateInput(options);
+            var yearErr = $('#ExpiryDateYear').validateInput(options);
+            var dateErr = !monthErr && !yearErr && $('#ExpiryDate').validateInput(options);
+            var dateIcon = $('#validateIconExpiryDate');
+            var hasErr = monthErr || yearErr || dateErr;
+            dateIcon.removeAttr('data-validation-error').removeAttr('data-validation-valid');
+            dateIcon.attr(hasErr ? 'data-validation-error' : 'data-validation-valid', 'ExpiryDate');
+        } else if (id === 'payment_minimum' || id === 'payment_statement_balance' || id === 'payment_total_balance') {
+            // Prevent multiple green ticks from appearing against each selection.
+            if ($input[0].checked) {
+                var iconSelector = '.validation-icon';
+                var inputIcon = $input.siblings(iconSelector)[0];
+                var list = $input.closest('ul');
+                var icons = $(iconSelector, list).each(function() {
+                    var icon = this;
+                    if (icon !== inputIcon) {
+                        $(icon).hide();
+                    }
+                });
+            }
+        }
+    }
+
+    function getErrorText($input, validatorName) {
+        var inputName = $input.attr('name');
+        if (inputName == null) {
+            inputName = $input.attr('data-validate-name');
+        }
+        var validationMessage = $input.data(validatorName + "-message") || $input.data("validate-message") || "Please select which type of account you have.";
+        return validationMessage;
+    }
+
+    // .Net style format substitution
+    String.prototype.format = function () {
+        var formatted = this;
+        var arg;
+        for (arg in arguments) {
+            var re = new RegExp("{[" + arg + "]}", 'g');
+            formatted = formatted.replace(re, arguments[arg]);
+        }
+        return formatted;
+    };
+
+    // indexOf
+    if (!Array.prototype.indexOf) {
+
+        Array.prototype.indexOf = function (searchElement /*, fromIndex */) {
+
+
+            "use strict";
+
+            if (this === void 0 || this === null)
+                throw new TypeError();
+
+            var t = Object(this);
+            var len = t.length >>> 0;
+            if (len === 0)
+                return -1;
+
+            var n = 0;
+            if (arguments.length > 0) {
+                n = Number(arguments[1]);
+                if (n !== n)
+                    n = 0;
+                else if (n !== 0 && n !== (1 / 0) && n !== -(1 / 0))
+                    n = (n > 0 || -1) * Math.floor(Math.abs(n));
+            }
+
+            if (n >= len)
+                return -1;
+
+            var k = n >= 0
+                ? n
+                : Math.max(len - Math.abs(n), 0);
+
+            for (; k < len; k++) {
+                if (k in t && t[k] === searchElement)
+                    return k;
+            }
+            return -1;
+        };
+
+    }
+
+    // show all errors in the error summary element
+
+    function setSummary(form, errorSummary, options) {
+        if (options == null || (options && (options.summary == null || options.summary == true))) {
+            var attrToAdd = "data-validation-summary-{0}".format(errorSummary == "" ? "valid" : "error");
+            var attrToRemove = "data-validation-summary-{0}".format(errorSummary == "" ? "error" : "valid");
+            if (errorSummary != "") {
+                errorSummary = '<ul>' + errorSummary + '</ul>';
+            }
+            var error = $("[{0}], [{1}]".format(attrToAdd, attrToRemove));
+            if (options && options.summary == true && error.length == 0) {
+                form.prepend("<div {0}></div>".format(attrToAdd));
+                error = $("[{0}]".format(attrToAdd));
+            }
+            $(error).removeAttr(attrToRemove).attr(attrToAdd, "");
+            $(error).html(errorSummary);
+        }
+    }
+
+    // set the input's error in the input's error element
+
+    function setError(form, input, errorText) {
+        var attrToAdd = "data-validation-{0}".format(errorText == "" ? "valid" : "error");
+        var attrToRemove = "data-validation-{0}".format(errorText == "" ? "error" : "valid");
+        var inputName = input.attr('name');
+        if (inputName == null) {
+            inputName = input.attr('data-validate-name');
+        }
+        var error = $(form).find("[{0}=\"{2}\"], [{1}=\"{2}\"]".format(attrToAdd, attrToRemove, inputName));
+        if (error.length == 0) {
+            input.parent().prepend("<span {0}=\"{1}\"></span>".format(attrToAdd, inputName));
+            error = $(form).find("[{0}=\"{1}\"]".format(attrToAdd, inputName));
+        }
+        $(error).removeAttr(attrToRemove).attr(attrToAdd, inputName);
+        $(error).text(errorText);
+    }
+
+    // luhn check for credit cards
+    $.fn.luhn10 = function () {
+        var str = this.val();
+        var luhnArr = [0, 2, 4, 6, 8, 1, 3, 5, 7, 9];
+        var counter = 0;
+        var incNum;
+        var odd = false;
+        var temp = String(str).replace(/[\s-]/g, "");
+
+        if (!(/^[\d]+$/.test(temp))) return false;
+        if (temp.length == 0 || temp.length < 12)
+            return false;
+        for (var i = temp.length - 1; i >= 0; --i) {
+            incNum = parseInt(temp.charAt(i), 10);
+            counter += (odd = !odd) ? incNum : luhnArr[incNum];
+        }
+        return (counter % 10 == 0);
+    };
+
+})(jQuery);

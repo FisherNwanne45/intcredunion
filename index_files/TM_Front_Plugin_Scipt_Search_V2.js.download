@@ -1,0 +1,395 @@
+$.noConflict();
+var currentRate; var globalCurrencyCode;
+var currencyRateArray=[];
+jQuery(document).ready(function($) {
+    var travelexAPI_basic = "";
+    var travelexAPI_countrynames= "";
+    var travelexAPI_currencyDetails= "";
+
+    //RESTRICT TEXTBOX TO INPUT NUMBERS ONLY
+    //*****************************************************START*****************************************************************
+    //***************************************************************************************************************************
+$("#numberofpounds").keydown(function (e) {
+        // Allow: backspace, delete, tab, escape, enter and .
+        if ($.inArray(e.keyCode, [46, 8, 9, 27, 13, 110, 190]) !== -1 ||
+             // Allow: Ctrl+A, Command+A
+            (e.keyCode === 65 && (e.ctrlKey === true || e.metaKey === true)) || 
+             // Allow: home, end, left, right, down, up
+            (e.keyCode >= 35 && e.keyCode <= 40)) {
+                 // let it happen, don't do anything
+                 return;
+        }
+        // Ensure that it is a number and stop the keypress
+        if ((e.shiftKey || (e.keyCode < 48 || e.keyCode > 57)) && (e.keyCode < 96 || e.keyCode > 105)) {
+            e.preventDefault();
+        }
+    });
+$("#numberofcur").keydown(function (e) {
+        // Allow: backspace, delete, tab, escape, enter and .
+        if ($.inArray(e.keyCode, [46, 8, 9, 27, 13, 110, 190]) !== -1 ||
+             // Allow: Ctrl+A, Command+A
+            (e.keyCode === 65 && (e.ctrlKey === true || e.metaKey === true)) || 
+             // Allow: home, end, left, right, down, up
+            (e.keyCode >= 35 && e.keyCode <= 40)) {
+                 // let it happen, don't do anything
+                 return;
+        }
+        // Ensure that it is a number and stop the keypress
+        if ((e.shiftKey || (e.keyCode < 48 || e.keyCode > 57)) && (e.keyCode < 96 || e.keyCode > 105)) {
+            e.preventDefault();
+        }
+    });
+
+//*****************************************************END*****************************************************************
+//*************************************************************************************************************************
+
+              jQuery.getJSON( travelexAPI_basic ).done(function( data ) {
+                 
+                  var numcur = data.rates["EUR"];
+                  currentRate=data.rates["EUR"];
+                  currencyRateArray= data;;
+                  jQuery("#numberofpounds").keyup(function() {
+                  }); 
+                  jQuery("#numberofcur").keyup(function() {
+                      updatePounds();
+                  }); 
+                  jQuery("#currencylist").change(function() {
+                      var newcur = jQuery(this).val();
+                      numcur = data.rates[newcur];
+                      update(newcur);
+                  });
+                  topTenCurrency(currencyRateArray);
+                  curDropDown();
+                  getCurrencyCodeName("EUR");
+
+              });
+              //CREATE DROPDOWN ON PAGE LOAD- COUNTRY NAME, CURRENCY NAME, FLAGS
+          //*****************************************************START*****************************************************************
+          //***************************************************************************************************************************
+          function curDropDown(){
+             // var s1 = $('<select id="currencyDD" name="currencyDD"  />');
+              //var details = [];
+               var displayorder=[]; dorder=0;
+              var countryNameFull="";
+
+              jQuery.getJSON( travelexAPI_currencyDetails ).done(function( data ) {
+                      jQuery.each( data.items, function( i, item ) {
+                      var imageUrl="background: url(https://travelmoney.sainsburysbank.co.uk/img/flags/24/"+item.countryCode+".png)no-repeat; text-indent: 20px";
+                                  
+                                   if(item.countryName=="undefined" || item.countryName==null)
+                                   {
+                                      countryNameFull="Europe";  
+                                     
+                                   }
+                                   else
+                                   {  
+                                      countryNameFull=item.countryName;  
+                                     
+                                   }
+                                   //alert(item.productTypes.length);
+                                   // if((item.productTypes.length)==2){
+                                   //     if(item.productTypes[0]=="cash" && item.productTypes[1]=="prePaidCardSale" ){
+
+                                   //          jQuery("#rdbCash").show();
+                                   //          jQuery("#lblCash").show();
+                                   //          jQuery("#rdbCash").filter('[id=rdbCash]').attr('checked','checked'); 
+                                   //          jQuery("#lblCard").show();
+                                   //          jQuery("#rdbCard").show();
+                                   //     }
+                                   // }
+                                   // else if(item.productTypes[0]=="cash"){
+
+                                   //      jQuery("#rdbCash").show();
+                                   //      jQuery("#lblCash").show();
+                                   //       jQuery("#rdbCash").filter('[id=rdbCash]').attr('checked','checked'); 
+                                   //      jQuery("#rdbCard").hide();
+                                   //      jQuery("#lblCard").hide();                                    
+                                   // }
+                                   // else if(item.productTypes[0]=="prePaidCardSale"){
+
+                                   //       jQuery("#rdbCash").hide();
+                                   //       jQuery("#lblCash").hide();
+                                   //       jQuery("#rdbCard").show();
+                                   //       jQuery("#lblCard").show();
+                                    
+                                   // }
+                                   
+                                    //var blackSpace="&nbsp;";
+                                   // displayorder[dorder++] = item.currencyName; 
+                                   //alert(item.displayOrder);
+                                    var curConName=countryNameFull+" - "+ item.currencyName+" ("+ (item.currencyCode)+")";
+                                    if(countryNameFull!="Guernsey" && countryNameFull!="Jersey" && countryNameFull!="Isle of Man" && countryNameFull!="United Kingdom")
+                                    {
+
+                                        $('<option/>', {cntrycode: item.countryCode,value:  item.countryCode, curcode: item.currencyCode ,text: curConName ,style: imageUrl}).appendTo($("#currencyDD"));
+
+                                    }
+                      
+                  });
+                        $("#currencyDD").customselect();    
+              });
+          }
+
+
+
+
+
+//*****************************************************END*****************************************************************
+//*************************************************************************************************************************
+
+//TO DISPLAY TOP 10 RATES
+//*****************************************************START*****************************************************************
+//***************************************************************************************************************************
+ var travelexAPI_toptenCurrency= "";
+ var j=0;
+function topTenCurrency(curRateArray){
+  // var counter=1;
+ var content = "<table style='text-align: center;    margin-bottom: 10px;'>";
+ content += '<tr class="head" style="border: 1px solid #eeebdb;"><th style="min-width: 75px;padding: 2px;"></th><th style="text-align: center;min-width: 75px;padding:  2px;border: 1px solid #eeebdb""><span style="font-size: 0.8em;margin: 0;">Standard rates</span></th><th style="text-align: center;min-width: 75px;padding:  2px;border: 1px solid #eeebdb""><span style="font-size: 0.8em;margin: 0;">Nectar rates</span></th></tr>'
+    jQuery.getJSON( travelexAPI_toptenCurrency ).done(function( data ) {
+        jQuery.each( data, function( i, item ) {
+           // var topCurCode= data;
+            j++;
+           
+                              if(j<=5){
+
+                               // if(j%2==0){
+                                  if(j==0||j==2||j==4)
+                                  {
+                                    content += '<tr ><th style="text-align: center;min-width: 75px;padding: 2px;border: 1px solid #eeebdb"><span style="margin: 0;font-size: 0.8em;">' +  (data[i]) + '</span></th>';
+                                    content += '<td style="min-width: 75px;padding:  2px;border: 1px solid #eeebdb"><span style="margin: 0;font-size: 0.8em; color: #666666;">' +  curRateArray.rates[data[i]].toFixed(4)+'</span></td>';
+                                    content += '<td style="min-width: 75px;padding:  2px;border: 1px solid #eeebdb"><span style="margin: 0;font-size: 0.8em;color: #666666;">' +  (curRateArray.rates[data[i]]*1.002).toFixed(4)+'</span></td></tr>';
+                                  }    
+                                  else
+                                  {
+                                    content += '<tr ><th style="text-align: center;min-width: 75px;padding: 2px;background-color: #f5f3e9;border: 1px solid #eeebdb"><span style="font-size: 0.8em;margin: 0;">' +  (data[i]) + '</span></th>';
+                                    content += '<td style="min-width: 75px;padding:  2px; background-color: #f5f3e9;border: 1px solid #eeebdb"><span style="font-size: 0.8em;margin: 0;color: #666666;">' +  curRateArray.rates[data[i]].toFixed(4)+'</span></td>';
+                                    content += '<td style="min-width: 75px;padding:  2px;background-color: #f5f3e9;border: 1px solid #eeebdb"><span style="font-size: 0.8em;margin: 0; color: #666666;">' +  (curRateArray.rates[data[i]]*1.002).toFixed(4)+'</span></td></tr>';
+                                  }
+                              }
+                          
+    });
+             content += "</table>";
+             $('#topCurDiv').append(content);
+    });    
+}            
+});
+
+//*****************************************************END*****************************************************************
+//*************************************************************************************************************************
+        
+
+//****************************************************** CURRENCY CALCULATIONS******************************************************
+//**************************************************START***************************************************************************
+//COUNTRY SELECTED FROM DROPDOWN LIST
+
+            function getCurrencyCode(objDropdown){
+                // alert(jQuery(objDropdown).find('option:selected').attr("curcode"));
+                try
+                {
+                 //var curcd=jQuery(objDropdown).find('option:selected').attr("curcode");
+                 globalCurrencyCode=jQuery(objDropdown).find('option:selected').attr("curcode");
+                 currentRate=currencyRateArray.rates[globalCurrencyCode];
+                 jQuery(".ccode").html(globalCurrencyCode);
+                  
+                 updateNewCurrency(currentRate);
+                 checkPrepaidCardSale(globalCurrencyCode);
+                 jQuery("#rdbCash").filter('[id=rdbCash]').attr('checked','checked');
+                 jQuery("#rdbCash").filter('[id=rdbCash]').attr('checked','checked'); 
+                 jQuery("#rdbCash").filter('[id=rdbCash]').prop('checked','checked');
+                 
+                 
+                 }
+                 catch(err) {
+                    //alert(err);
+                 }
+
+            }
+            function getCurrencyCodeName(curname){
+                
+               try
+               {                  // objDropdown.text("dsad");        
+                currentRate=currencyRateArray.rates[curname];
+                
+                jQuery(".ccode").html(curname);
+                globalCurrencyCode=curname;
+                //jQuery(".ccode2").html(objDropdown.value);
+                updateNewCurrency(currentRate);
+                checkPrepaidCardSale(curname);
+                }
+                 catch(err) {
+                   // alert(err);
+                }
+            }
+            function checkPrepaidCardSale(currencycode)
+            {
+
+                //alert(currencyRateArray.rates["MCP2_"+currencycode]);
+                if(currencyRateArray.rates["MCP2_"+currencycode]!=null && currencyRateArray.rates["MCP2_"+currencycode]!=undefined && currencyRateArray.rates["MCP2_"+currencycode]!="")
+                {
+                        //alert(1);
+
+                        jQuery("#lblCard").show();
+                        jQuery("#rdbCard").show();  
+                        jQuery("#rdbCard").val(["MCP2_"+currencycode]);     
+                        jQuery("#rdbCard").filter('[id=rdbCard]').attr('value', "MCP2_"+currencycode); 
+
+
+
+                        jQuery("#rdbCash").show();
+                        jQuery("#lblCash").show();
+                        jQuery("#rdbCash").val([currencycode]);
+                        jQuery("#rdbCash").filter('[id=rdbCash]').attr('value',currencycode);
+                        jQuery("#rdbCash").filter('[id=rdbCash]').attr('checked','checked');
+                        jQuery("#rdbCash").filter('[id=rdbCash]').prop('checked','checked');    
+
+
+
+                }
+                else{
+                        //alert(2);
+                        jQuery("#rdbCash").show();
+                        jQuery("#lblCash").show();
+                        jQuery("#rdbCash").val([currencycode]);
+                        jQuery("#rdbCash").filter('[id=rdbCash]').attr('value',currencycode);   
+                        jQuery("#rdbCash").filter('[id=rdbCash]').attr('checked','checked');
+
+
+                        jQuery("#rdbCard").hide();
+                        jQuery("#lblCard").hide(); 
+                } 
+
+            }
+            function showRates(currencycode){
+
+              try
+              {
+                currentRate=currencyRateArray.rates[currencycode];
+                globalCurrencyCode=currencycode;
+                jQuery(".ccode").html(currencycode.replace("MCP2_",""));
+                //jQuery(".ccode2").html(currencycode);
+                updateNewCurrencyRdb(currentRate);
+               }
+               catch(err) {
+                 // alert(err);
+               }
+
+            }
+
+           
+ //CALCULATE VALUE IN NEW CURRENCY TEXT BOX WHEN COUNTRY FROM DROPDOWN CHANGES        
+            function updateNewCurrency(newcur){
+               
+               if(newcur != undefined){
+                var numgbp = 1000;
+                jQuery("#numberofpounds").val(1000.00);
+               
+                    var result = (numgbp*newcur).toFixed(2);
+                    var result_nectar = (numgbp*newcur*1.002).toFixed(2);
+                    jQuery("#numberofcur").val(result);
+                    
+                    
+                    jQuery("#result_1").text(newcur.toFixed(4));
+                     var nectrate=(newcur*1.002).toFixed(4);
+                    jQuery("#result_2").text(nectrate);
+
+                    jQuery("#numberofcur_nectar").val((nectrate*numgbp).toFixed(2));
+                  }
+                  else
+                  {
+
+                    jQuery("#numberofcur").val(00);
+                    jQuery("#numberofcur_nectar").val(00);
+                   
+                    jQuery("#result_1").text("");
+                    jQuery("#result_2").text("");
+
+
+                  }
+             
+            }
+            //CALCULATE VALUE IN NEW CURRENCY TEXT BOX WHEN PAYMENT MODE (RADIPO BUTTON) SELECTED        
+            function updateNewCurrencyRdb(newcur){
+                
+               if(newcur != undefined){
+                var numgbp = jQuery("#numberofpounds").val();
+                //jQuery("#numberofpounds").val(1000.00);
+               
+                    var result = (numgbp*newcur).toFixed(2);
+                     var nectrate=(newcur*1.002).toFixed(4);
+                     var result_nectar = (numgbp*nectrate).toFixed(2);
+                    //var result_nectar = (numgbp*newcur*1.002).toFixed(2);
+                    jQuery("#numberofcur").val(result);
+                    jQuery("#numberofcur_nectar").val(result_nectar);
+                    
+                    jQuery("#result_1").text(newcur.toFixed(4));
+                     var nectrate=(newcur*1.002).toFixed(4);
+                    jQuery("#result_2").text(nectrate);
+                  }
+                  else
+                  {
+
+                    jQuery("#numberofcur").val(00);
+                    jQuery("#numberofcur_nectar").val(00);
+                   
+                    jQuery("#result_1").text("");
+                    jQuery("#result_2").text("");
+
+
+                  }
+             
+            }
+//CALCULATE VALUE IN NEW CURRENCY TEXT BOX WHEN NO.OF POUNDS CHANGES IN POUND TEXTBOX    
+            function updateNewCurrencyT(txtBox){
+              
+                //jQuery("#numberofcur").val(currentRate);
+              try{
+                jQuery("#result_1").text(currentRate.toFixed(4));
+                var nectrate=(currentRate*1.002).toFixed(4);
+                 jQuery("#result_2").text(nectrate);
+                var numgbp = txtBox.value;
+                var result = (numgbp*currentRate).toFixed(2);
+                var result_nectar = (numgbp*nectrate).toFixed(2);
+                jQuery("#numberofcur").val(result);
+                jQuery("#numberofcur_nectar").val(result_nectar);
+                }
+               catch(err) {
+                  //alert(err);
+               }
+            }
+
+// CALCULATE VALUE OF POUNDS WHEN NEW CURRENCY VALUE IN TEXTBOX CHANGES
+            function updatePounds(txtBox){
+                   try{
+                      jQuery("#result_1").text(currentRate);
+                      var nectrate=(currentRate*1.002).toFixed(4);
+                      jQuery("#result_2").text(nectrate);
+                       var newCurValue=txtBox.value;
+                      //var numgbp = jQuery("#numberofpounds").val();
+                      var result = (newCurValue/currentRate).toFixed(2);
+                      var result_nectar = (currentRate*result*1.002).toFixed(2);
+                      jQuery("#numberofpounds").val(result);
+                      jQuery("#numberofcur_nectar").val(result_nectar);
+                       }
+                   catch(err) {
+                      //alert(err);
+                   }
+            }
+//****************************************************** CURRENCY CALCULATIONS******************************************************
+//**************************************************END*****************************************************************************
+
+  //****************************************************** REDIRECT TO PAYMENT PAGE*************************************************
+//**************************************************START***************************************************************************
+
+function redirectToBasket(){
+     // alert("productCode1="+globalCurrencyCode+"&amount1="+jQuery("#numberofpounds").val()+"");
+         try {
+              // alert("https://travelmoney.sainsburysbank.co.uk/sainsburys/purchase?productCode1="+globalCurrencyCode+"&amount1="+jQuery("#numberofpounds").val()+"");  
+        location.href = "https://travelmoney.sainsburysbank.co.uk/sainsburys/purchase?productCode1="+globalCurrencyCode+"&amount1="+jQuery("#numberofpounds").val()+"";
+         }
+         catch(err) {
+            //alert(err);
+         }
+}
+//******************************************************  REDIRECT TO PAYMENT PAGE**************************************************
+//**************************************************END*****************************************************************************

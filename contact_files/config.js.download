@@ -1,0 +1,13 @@
+﻿var applyConfig = applyConfig || {};
+
+/*Redirect timeouts*/
+applyConfig.serverTimeoutMins = $('body').data('timeout'); //server timeout
+if (applyConfig.serverTimeoutMins == undefined) { //if no data attribute then set to default
+    applyConfig.serverTimeoutMins = 1;
+}
+
+applyConfig.serverTimeout = applyConfig.serverTimeoutMins * 60 * 100000; //get timeout in ms.
+applyConfig.redirectTimeout = 1200000; //time in ms after the warning timeout until the page timeout redirects the user
+applyConfig.warningTimeout = applyConfig.serverTimeout - applyConfig.redirectTimeout; //time in ms until the page timeout warning appears
+
+
